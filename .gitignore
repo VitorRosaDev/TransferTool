@@ -1,0 +1,62 @@
+# Vault Obsidian (Single Source of Truth — não versionado junto com código)
+TransferTool_Vault/
+
+# Expo / React Native
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+/ios
+/android
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# Logs/Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Scratch Scripts
+scratch/
+
+# Environment
+.env
+.env.local
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Banco de dados temporário (SQLite)
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE e Ferramentas
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+*.pem
+Thumbs.db
