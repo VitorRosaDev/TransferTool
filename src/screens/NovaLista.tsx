@@ -128,7 +128,7 @@ export function NovaLista() {
         )}
 
         <View style={styles.selectionArea}>
-          {step === 2 && origem && (
+          {origem && (
             <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Origem Selecionada</Text>
               <Text style={[styles.selectedValue, { color: colors.text }]}>{origem.nome}</Text>
