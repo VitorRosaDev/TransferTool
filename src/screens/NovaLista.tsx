@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, Suggestion } from '../models/ListaModel';
+import { useTheme } from '../contexts/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 
 export function NovaLista() {
   const db = useSQLiteContext();
@@ -17,6 +18,8 @@ export function NovaLista() {
   // Seleções
   const [origem, setOrigem] = useState<Suggestion | null>(null);
   const [destino, setDestino] = useState<Suggestion | null>(null);
+
+  const { colors } = useTheme();
 
   // Efeito de Busca em Tempo Real
   useEffect(() => {
@@ -41,7 +44,6 @@ export function NovaLista() {
       }
     }
 
-    // Debounce simples
     const delayDebounceFn = setTimeout(() => {
       fetchSuggestions();
     }, 300);
@@ -61,229 +63,162 @@ export function NovaLista() {
     }
   };
 
-  const handleContinuar = () => {
-    if (step === 1 && origem) {
-      setStep(2);
-    }
+  const handleNext = () => {
+    if (step === 1 && origem) setStep(2);
   };
 
-  const handleVoltar = () => {
-    if (step === 2) {
-      setStep(1);
-    } else {
-      navigation.goBack();
-    }
-  };
-
-  const handleIniciarSeparacao = async () => {
+  const handleConfirm = async () => {
     if (!origem || !destino) return;
 
     try {
-      // Cria a lista em rascunho usando o Model
       const novaListaId = await ListaModel.criarRascunho(db, origem.id, destino.id);
-
-      // 3. Limpar formulário e Navegar
       setStep(1);
       setOrigem(null);
       setDestino(null);
       setSearchQuery('');
-      
       navigation.navigate('ScannerLista', { listaId: novaListaId });
-
     } catch (e) {
       console.error("Erro ao iniciar lista:", e);
       Alert.alert("Erro", "Não foi possível criar a lista de rancho no banco de dados.");
     }
   };
 
-  const renderSuggestion = ({ item }: { item: Suggestion }) => (
-    <TouchableOpacity style={styles.suggestionCard} onPress={() => handleSelect(item)}>
-      <View style={styles.suggestionIcon}>
-        <Ionicons name={step === 1 ? "business-outline" : "school-outline"} size={24} color="#4B5563" />
-      </View>
-      <View>
-        <Text style={styles.suggestionTitle}>{item.nome}</Text>
-        <Text style={styles.suggestionSubtitle}>Cód: {item.codigo || item.codigo_deposito}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const isNextDisabled = step === 1 ? !origem : !destino;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {/* Header Wizard */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleVoltar} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => step === 2 ? setStep(1) : navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Passo {step} de 2</Text>
-        <View style={{ width: 24 }} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Passo {step} de 2</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: colors.text }]}>
           {step === 1 ? 'Selecione a Origem' : 'Selecione o Destino'}
         </Text>
-        <Text style={styles.subtitle}>
-          {step === 1 
-            ? 'De onde os itens estão saindo?' 
-            : 'Para qual escola/unidade vão os itens?'}
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          {step === 1 ? 'De onde os itens estão saindo?' : 'Para onde os itens vão?'}
         </Text>
 
-        {/* Selecionado Atual */}
-        {(step === 1 ? origem : destino) ? (
-          <View style={styles.selectedContainer}>
-            <Ionicons name="checkmark-circle" size={32} color="#10B981" />
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.selectedLabel}>
-                {step === 1 ? 'Origem Escolhida:' : 'Destino Escolhido:'}
-              </Text>
-              <Text style={styles.selectedText}>{(step === 1 ? origem : destino)?.nome}</Text>
-            </View>
-            <TouchableOpacity onPress={() => step === 1 ? setOrigem(null) : setDestino(null)}>
-              <Ionicons name="close-circle" size={28} color="#EF4444" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.inputContainer}>
-            <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Digite para pesquisar..."
-              placeholderTextColor="#9CA3AF"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-          </View>
-        )}
-
-        {/* Sugestões */}
-        {suggestions.length > 0 && !(step === 1 ? origem : destino) && (
-          <FlatList
-            data={suggestions}
-            keyExtractor={item => item.id.toString()}
-            renderItem={renderSuggestion}
-            style={styles.suggestionList}
-            keyboardShouldPersistTaps="handled"
+        <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Ionicons name="search" size={20} color={colors.textMuted} />
+          <TextInput
+            style={[styles.input, { color: colors.text }]}
+            placeholder="Digite para pesquisar..."
+            placeholderTextColor={colors.textMuted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
           />
+        </View>
+
+        {suggestions.length > 0 && (
+          <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {suggestions.map(s => (
+              <TouchableOpacity key={s.id} style={[styles.suggestionItem, { borderBottomColor: colors.border }]} onPress={() => handleSelect(s)}>
+                <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
+                <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
+                  Código: {step === 1 ? s.codigo : s.codigo_deposito}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
 
-        {/* Spacer */}
-        <View style={{ flex: 1 }} />
-
-        {/* Botão de Ação */}
-        {step === 1 ? (
-          <TouchableOpacity 
-            style={[styles.primaryButton, !origem && styles.disabledButton]} 
-            disabled={!origem}
-            onPress={handleContinuar}
-          >
-            <Text style={styles.primaryButtonText}>Continuar para Destino</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity 
-            style={[styles.successButton, !destino && styles.disabledButton]} 
-            disabled={!destino}
-            onPress={handleIniciarSeparacao}
-          >
-            <Text style={styles.primaryButtonText}>Iniciar Separação</Text>
-            <Ionicons name="play" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-          </TouchableOpacity>
-        )}
+        <View style={styles.selectionArea}>
+          {step === 2 && origem && (
+            <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Origem Selecionada</Text>
+              <Text style={[styles.selectedValue, { color: colors.text }]}>{origem.nome}</Text>
+            </View>
+          )}
+          {destino && (
+            <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Destino Selecionado</Text>
+              <Text style={[styles.selectedValue, { color: colors.text }]}>{destino.nome}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </KeyboardAvoidingView>
+
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <TouchableOpacity 
+          style={[styles.btnContinue, isNextDisabled ? styles.btnDisabled : { backgroundColor: colors.primary }]}
+          disabled={isNextDisabled}
+          onPress={step === 1 ? handleNext : handleConfirm}
+        >
+          <Text style={styles.btnContinueText}>
+            {step === 1 ? 'Continuar para Destino' : 'Finalizar e Iniciar Lista'}
+          </Text>
+          <Ionicons name="arrow-forward" size={20} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    paddingTop: 50,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
-    backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
   },
-  backButton: { padding: 5 },
-  headerTitle: { fontSize: 16, fontWeight: '600', color: '#4B5563' },
+  backBtn: { padding: 8, marginLeft: -8 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 16 },
+  
   content: { flex: 1, padding: 24 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1F2937' },
-  subtitle: { fontSize: 16, color: '#6B7280', marginTop: 8, marginBottom: 24 },
-  inputContainer: {
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
+  subtitle: { fontSize: 16, marginBottom: 24 },
+  
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
   },
-  searchIcon: { marginRight: 12 },
-  input: { flex: 1, fontSize: 16, color: '#1F2937' },
+  input: { flex: 1, marginLeft: 12, fontSize: 16 },
+  
   suggestionList: {
-    marginTop: 12,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    maxHeight: 250,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
-  },
-  suggestionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6'
-  },
-  suggestionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12
-  },
-  suggestionTitle: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
-  suggestionSubtitle: { fontSize: 14, color: '#6B7280', marginTop: 2 },
-  selectedContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    padding: 20,
+    marginTop: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#10B981'
+    maxHeight: 250,
+    elevation: 3,
   },
-  selectedLabel: { fontSize: 14, color: '#047857' },
-  selectedText: { fontSize: 18, fontWeight: 'bold', color: '#065F46', marginTop: 4 },
-  primaryButton: {
-    flexDirection: 'row',
-    backgroundColor: '#2563EB',
-    height: 56,
+  suggestionItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  suggestionText: { fontSize: 16, fontWeight: '500' },
+  suggestionCode: { fontSize: 14, marginTop: 4 },
+  
+  selectionArea: { flex: 1, marginTop: 24 },
+  selectedCard: {
+    padding: 16,
     borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  selectedLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
+  selectedValue: { fontSize: 18, fontWeight: 'bold', marginTop: 4 },
+  
+  footer: { padding: 24, borderTopWidth: 1 },
+  btnContinue: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 'auto'
-  },
-  successButton: {
-    flexDirection: 'row',
-    backgroundColor: '#10B981',
     height: 56,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 'auto'
+    gap: 8,
   },
-  disabledButton: { backgroundColor: '#9CA3AF' },
-  primaryButtonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
+  btnDisabled: { backgroundColor: '#9CA3AF' },
+  btnContinueText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
 });

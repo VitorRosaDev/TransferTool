@@ -7,25 +7,26 @@ import { GerenciarCatalogo } from '../screens/GerenciarCatalogo';
 import { ScannerLista } from '../screens/ScannerLista';
 import { ListasCriadas } from '../screens/ListasCriadas';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Drawer = createDrawerNavigator();
 
 export function DrawerRoutes() {
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme, colors } = useTheme();
 
   const CustomDrawerContent = (props: any) => {
     return (
-      <View style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <DrawerContentScrollView {...props}>
           <DrawerItemList {...props} />
         </DrawerContentScrollView>
-        <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: isDark ? '#374151' : '#E5E7EB' }}>
+        <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: colors.border }}>
           <TouchableOpacity 
             style={{ flexDirection: 'row', alignItems: 'center' }} 
-            onPress={() => setIsDark(!isDark)}
+            onPress={toggleTheme}
           >
-            <Ionicons name={isDark ? "sunny" : "moon"} size={24} color={isDark ? "#FBBF24" : "#4B5563"} />
-            <Text style={{ marginLeft: 16, fontSize: 16, color: isDark ? '#F3F4F6' : '#1F2937', fontWeight: 'bold' }}>
+            <Ionicons name={isDark ? "sunny" : "moon"} size={24} color={colors.text} />
+            <Text style={{ marginLeft: 16, fontSize: 16, color: colors.text, fontWeight: 'bold' }}>
               {isDark ? 'Modo Claro' : 'Modo Escuro'}
             </Text>
           </TouchableOpacity>
@@ -39,13 +40,13 @@ export function DrawerRoutes() {
       initialRouteName="Home"
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle: { backgroundColor: isDark ? '#111827' : '#2563EB' },
+        headerStyle: { backgroundColor: colors.headerBg },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: 'bold' },
-        drawerActiveTintColor: isDark ? '#60A5FA' : '#2563EB',
-        drawerInactiveTintColor: isDark ? '#9CA3AF' : '#4B5563',
+        drawerActiveTintColor: isDark ? '#FFFFFF' : '#2563EB',
+        drawerInactiveTintColor: colors.textMuted,
         drawerLabelStyle: { fontSize: 16 },
-        drawerStyle: { backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }
+        drawerStyle: { backgroundColor: colors.background }
       }}
     >
       <Drawer.Screen 

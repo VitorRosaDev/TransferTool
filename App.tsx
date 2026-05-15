@@ -6,6 +6,18 @@ import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite';
 import { setupDatabase, seedDatabase } from './src/database/schema';
 import { View, Text, ActivityIndicator } from 'react-native';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+
+function RootApp() {
+  const { isDark } = useTheme();
+  
+  return (
+    <NavigationContainer>
+      <StatusBar style={isDark ? "light" : "light"} backgroundColor={isDark ? "#000000" : "#2563EB"} />
+      <DrawerRoutes />
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   const initializeDb = async (db: SQLiteDatabase) => {
@@ -25,10 +37,9 @@ export default function App() {
       </View>
     }>
       <SQLiteProvider databaseName="transfertool_v2.db" onInit={initializeDb} useSuspense>
-        <NavigationContainer>
-          <StatusBar style="light" backgroundColor="#2563EB" />
-          <DrawerRoutes />
-        </NavigationContainer>
+        <ThemeProvider>
+          <RootApp />
+        </ThemeProvider>
       </SQLiteProvider>
     </React.Suspense>
   );

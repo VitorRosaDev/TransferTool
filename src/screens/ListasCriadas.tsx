@@ -4,6 +4,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, ListaHist } from '../models/ListaModel';
+import { useTheme } from '../contexts/ThemeContext';
 
 
 
@@ -37,6 +38,7 @@ export function ListasCriadas() {
   const db = useSQLiteContext();
   const navigation = useNavigation<any>();
   const [listas, setListas] = useState<ListaHist[]>([]);
+  const { colors } = useTheme();
 
   const loadListas = useCallback(async () => {
     try {
@@ -84,12 +86,12 @@ export function ListasCriadas() {
 
     return (
       <TouchableOpacity 
-        style={styles.card} 
+        style={[styles.card, { backgroundColor: colors.card }]} 
         activeOpacity={0.7} 
         onPress={() => navigation.navigate('ScannerLista', { listaId: item.id })}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Lista #{item.id}</Text>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Lista #{item.id}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={[styles.badge, isConsolidada ? styles.badgeConsolidada : styles.badgeRascunho]}>
               <Text style={styles.badgeText}>{item.status}</Text>
@@ -98,23 +100,23 @@ export function ListasCriadas() {
               style={styles.deleteBtn} 
               onPress={(e) => { e.stopPropagation(); handleDeletarLista(item.id); }}
             >
-              <Ionicons name="trash-outline" size={24} color="#EF4444" />
+              <Ionicons name="trash-outline" size={24} color={colors.danger} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.routeContainer}>
-          <Text style={styles.routeText} numberOfLines={1}>{item.origem_nome}</Text>
-          <Ionicons name="arrow-forward" size={16} color="#6B7280" style={{ marginHorizontal: 8 }} />
-          <Text style={styles.routeText} numberOfLines={1}>{item.destino_nome}</Text>
+        <View style={[styles.routeContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.routeText, { color: colors.textMuted }]} numberOfLines={1}>{item.origem_nome}</Text>
+          <Ionicons name="arrow-forward" size={16} color={colors.textMuted} style={{ marginHorizontal: 8 }} />
+          <Text style={[styles.routeText, { color: colors.textMuted }]} numberOfLines={1}>{item.destino_nome}</Text>
         </View>
 
-        <View style={styles.cardFooter}>
+        <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
           <View style={styles.footerInfo}>
-            <Ionicons name="calendar-outline" size={16} color="#6B7280" style={{ marginRight: 4 }} />
-            <Text style={styles.dateText}>{formatFriendlyDate(item.data_criacao)}</Text>
+            <Ionicons name="calendar-outline" size={16} color={colors.textMuted} style={{ marginRight: 4 }} />
+            <Text style={[styles.dateText, { color: colors.textMuted }]}>{formatFriendlyDate(item.data_criacao)}</Text>
           </View>
-          <Text style={[styles.expirationText, diasRestantes <= 2 && { color: '#EF4444' }]}>
+          <Text style={[styles.expirationText, { color: colors.textMuted }, diasRestantes <= 2 && { color: colors.danger }]}>
             Auto-exclusão em {diasRestantes} dia(s)
           </Text>
         </View>
@@ -123,8 +125,8 @@ export function ListasCriadas() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.openDrawer()}>
           <Ionicons name="menu" size={28} color="#FFF" />
         </TouchableOpacity>
@@ -133,8 +135,8 @@ export function ListasCriadas() {
 
       {listas.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={64} color="#D1D5DB" />
-          <Text style={styles.emptyText}>Nenhuma lista encontrada.</Text>
+          <Ionicons name="document-text-outline" size={64} color={colors.border} />
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>Nenhuma lista encontrada.</Text>
         </View>
       ) : (
         <FlatList
@@ -153,15 +155,15 @@ export function ListasCriadas() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { backgroundColor: '#2563EB', padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
+  container: { flex: 1 },
+  header: { padding: 20, paddingTop: 40, flexDirection: 'row', alignItems: 'center' },
   menuBtn: { marginRight: 16 },
   headerTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
   
   listContainer: { padding: 16 },
-  card: { backgroundColor: '#FFF', borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  card: { borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F2937' },
+  cardTitle: { fontSize: 18, fontWeight: 'bold' },
   
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginRight: 8 },
   badgeRascunho: { backgroundColor: '#FEF3C7' },
@@ -169,14 +171,14 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 12, fontWeight: 'bold', color: '#1F2937' },
   deleteBtn: { padding: 4 },
 
-  routeContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 12, borderRadius: 8, marginBottom: 12 },
-  routeText: { fontSize: 14, fontWeight: '600', color: '#374151', flex: 1 },
+  routeContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 8, marginBottom: 12 },
+  routeText: { fontSize: 14, fontWeight: '600', flex: 1 },
   
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, paddingTop: 12 },
   footerInfo: { flexDirection: 'row', alignItems: 'center' },
-  dateText: { fontSize: 12, color: '#6B7280' },
-  expirationText: { fontSize: 11, fontStyle: 'italic', color: '#9CA3AF' },
+  dateText: { fontSize: 12 },
+  expirationText: { fontSize: 11, fontStyle: 'italic' },
 
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { marginTop: 16, color: '#9CA3AF', fontSize: 16 },
+  emptyText: { marginTop: 16, fontSize: 16 },
 });
