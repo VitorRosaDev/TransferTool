@@ -24,7 +24,7 @@ export default function App() {
         <Text style={{ marginTop: 16, color: '#6B7280' }}>Carregando Banco de Dados Local...</Text>
       </View>
     }>
-      <SQLiteProvider databaseName="transfertool.db" onInit={initializeDb} useSuspense>
+      <SQLiteProvider databaseName="transfertool_v2.db" onInit={initializeDb} useSuspense>
         <NavigationContainer>
           <StatusBar style="light" backgroundColor="#2563EB" />
           <DrawerRoutes />

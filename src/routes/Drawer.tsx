@@ -4,6 +4,7 @@ import { Home } from '../screens/Home';
 import { NovaLista } from '../screens/NovaLista';
 import { GerenciarCatalogo } from '../screens/GerenciarCatalogo';
 import { ScannerLista } from '../screens/ScannerLista';
+import { ListasCriadas } from '../screens/ListasCriadas';
 import { Ionicons } from '@expo/vector-icons';
 
 const Drawer = createDrawerNavigator();
@@ -33,7 +34,18 @@ export function DrawerRoutes() {
         component={NovaLista} 
         options={{
           title: 'Listas de Rancho',
+          headerShown: false,
+          drawerItemStyle: { display: 'none' },
           drawerIcon: ({ color }) => <Ionicons name="list-outline" size={22} color={color} />
+        }}
+      />
+      <Drawer.Screen 
+        name="ListasCriadas" 
+        component={ListasCriadas} 
+        options={{
+          title: 'Histórico de Cargas',
+          headerShown: false,
+          drawerIcon: ({ color }) => <Ionicons name="time-outline" size={22} color={color} />
         }}
       />
       <Drawer.Screen 
@@ -49,6 +61,7 @@ export function DrawerRoutes() {
         component={ScannerLista} 
         options={{ 
           title: 'Adicionar Itens', 
+          headerShown: false,
           drawerItemStyle: { display: 'none' } // Oculta do menu lateral
         }} 
       />

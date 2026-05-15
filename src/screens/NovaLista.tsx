@@ -3,13 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, K
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
-
-interface Suggestion {
-  id: number;
-  codigo?: string;
-  codigo_deposito?: string;
-  nome: string;
-}
+import { ListaModel, Suggestion } from '../models/ListaModel';
 
 export function NovaLista() {
   const db = useSQLiteContext();
@@ -33,19 +27,13 @@ export function NovaLista() {
       }
       
       try {
+        const queryUnaccented = searchQuery.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
         if (step === 1) {
-          // Busca Depósitos de Origem por Nome ou Código
-          const result = await db.getAllAsync<Suggestion>(
-            `SELECT id, codigo, nome FROM depositos_origem WHERE (nome LIKE ? OR codigo LIKE ?) AND ativo = 1 LIMIT 5`,
-            [`%${searchQuery}%`, `%${searchQuery}%`]
-          );
+          const result = await ListaModel.buscarOrigens(db, searchQuery, queryUnaccented);
           setSuggestions(result);
         } else {
-          // Busca Escolas de Destino por Nome ou Código
-          const result = await db.getAllAsync<Suggestion>(
-            `SELECT id, codigo_deposito, nome FROM escolas WHERE (nome LIKE ? OR codigo_deposito LIKE ?) AND ativo = 1 LIMIT 5`,
-            [`%${searchQuery}%`, `%${searchQuery}%`]
-          );
+          const result = await ListaModel.buscarDestinos(db, searchQuery, queryUnaccented);
           setSuggestions(result);
         }
       } catch (e) {
@@ -91,20 +79,8 @@ export function NovaLista() {
     if (!origem || !destino) return;
 
     try {
-      const dataCriacao = new Date().toISOString();
-      // 1. Criar a lista em Rascunho
-      const resultLista = await db.runAsync(
-        `INSERT INTO listas (origem_id, escola_id, data_criacao, status) VALUES (?, ?, ?, ?)`,
-        [origem.id, destino.id, dataCriacao, 'Rascunho']
-      );
-      
-      const novaListaId = resultLista.lastInsertRowId;
-
-      // 2. Criar log de transição (Padrão State)
-      await db.runAsync(
-        `INSERT INTO log_transicao (lista_rancho_id, estado_anterior, estado_novo, data_transicao, usuario, motivo) VALUES (?, ?, ?, ?, ?, ?)`,
-        [novaListaId, 'Nenhum', 'Rascunho', dataCriacao, 'Operador_Local', 'Criação inicial da lista']
-      );
+      // Cria a lista em rascunho usando o Model
+      const novaListaId = await ListaModel.criarRascunho(db, origem.id, destino.id);
 
       // 3. Limpar formulário e Navegar
       setStep(1);

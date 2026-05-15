@@ -16,6 +16,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       codigo TEXT NOT NULL UNIQUE,
       nome TEXT NOT NULL,
+      nome_busca TEXT NOT NULL,
       ativo INTEGER NOT NULL DEFAULT 1
     );
 
@@ -23,6 +24,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       codigo_deposito TEXT NOT NULL UNIQUE,
       nome TEXT NOT NULL,
+      nome_busca TEXT NOT NULL,
       ativo INTEGER NOT NULL DEFAULT 1
     );
 
@@ -30,6 +32,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       codigo TEXT NOT NULL UNIQUE,
       descricao TEXT NOT NULL,
+      descricao_busca TEXT NOT NULL,
       exige_validade INTEGER NOT NULL DEFAULT 1, -- 1 = TRUE, 0 = FALSE
       ativo INTEGER NOT NULL DEFAULT 1
     );
@@ -69,6 +72,13 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
 }
 
 /**
+ * Função utilitária para remover acentos e caracteres especiais para as colunas de busca.
+ */
+function removeAcentos(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+/**
  * Insere os dados base para a operação do aplicativo (Mock/Seed pré-populado).
  */
 export async function seedDatabase(db: SQLite.SQLiteDatabase) {
@@ -82,17 +92,26 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase) {
 
   // 1. Popular Depósitos de Origem
   for (const origem of SEED_ORIGENS) {
-    await db.runAsync('INSERT INTO depositos_origem (codigo, nome) VALUES (?, ?)', [origem.codigo, origem.nome]);
+    await db.runAsync(
+      'INSERT INTO depositos_origem (codigo, nome, nome_busca) VALUES (?, ?, ?)', 
+      [origem.codigo, origem.nome, removeAcentos(origem.nome)]
+    );
   }
 
   // 2. Popular Destinos (Escolas)
   for (const escola of SEED_ESCOLAS) {
-    await db.runAsync('INSERT INTO escolas (codigo_deposito, nome) VALUES (?, ?)', [escola.codigo, escola.nome]);
+    await db.runAsync(
+      'INSERT INTO escolas (codigo_deposito, nome, nome_busca) VALUES (?, ?, ?)', 
+      [escola.codigo, escola.nome, removeAcentos(escola.nome)]
+    );
   }
   
   // 3. Popular Itens (Catálogo sem quantidade)
   for (const item of SEED_ITENS) {
-    await db.runAsync('INSERT INTO itens (codigo, descricao, exige_validade) VALUES (?, ?, ?)', [item.codigo, item.descricao, item.exige_validade]);
+    await db.runAsync(
+      'INSERT INTO itens (codigo, descricao, descricao_busca, exige_validade) VALUES (?, ?, ?, ?)', 
+      [item.codigo, item.descricao, removeAcentos(item.descricao), item.exige_validade]
+    );
   }
   
   console.log('Seed Finalizado com Sucesso!');
