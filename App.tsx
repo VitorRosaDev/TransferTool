@@ -13,7 +13,7 @@ function RootApp() {
   
   return (
     <NavigationContainer>
-      <StatusBar style={isDark ? "light" : "light"} backgroundColor={isDark ? "#000000" : "#2563EB"} />
+      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={isDark ? "#000000" : "#2563EB"} />
       <DrawerRoutes />
     </NavigationContainer>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Home } from '../screens/Home';
