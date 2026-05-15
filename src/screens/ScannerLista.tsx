@@ -382,7 +382,29 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, height: 56, paddingHorizontal: 16 },
   searchIcon: { marginRight: 12 },
   input: { flex: 1, fontSize: 16 },
-  suggestionList: { position: 'absolute', top: 80, left: 20, right: 20, borderRadius: 12, elevation: 5, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, maxHeight: 200, zIndex: 20 },
+  suggestionList: { 
+    position: 'absolute', 
+    top: 80, 
+    left: 20, 
+    right: 20, 
+    borderRadius: 12, 
+    maxHeight: 200, 
+    zIndex: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.15)',
+      }
+    })
+  },
   suggestionCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
   sugDesc: { fontSize: 16, fontWeight: '600' },
   sugCod: { fontSize: 14 },

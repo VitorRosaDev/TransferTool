@@ -161,7 +161,25 @@ const styles = StyleSheet.create({
   headerTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
   
   listContainer: { padding: 16 },
-  card: { borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  card: { 
+    borderRadius: 12, 
+    padding: 16, 
+    marginBottom: 16, 
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.08)',
+      }
+    })
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   cardTitle: { fontSize: 18, fontWeight: 'bold' },
   
