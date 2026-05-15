@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert 
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../contexts/ThemeContext';
-import { CatalogoModel } from '../models/CatalogoModel';
+import { CatalogoModel, ItemCatalogo } from '../models/CatalogoModel';
 
 type ActionType = 'adicionar' | 'remover' | 'reativar';
 type CategoryType = 'deposito' | 'escola' | 'item';
@@ -171,6 +171,114 @@ export function GerenciarCatalogo() {
     </View>
   );
 
+  const [items, setItems] = useState<ItemCatalogo[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const fetchItems = async () => {
+    if (!category || action === 'adicionar') return;
+    setLoading(true);
+    try {
+      const data = await CatalogoModel.listar(db, category, action === 'remover');
+      setItems(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível carregar os itens.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (step === 3 && action !== 'adicionar') {
+      fetchItems();
+      setSelectedIds([]);
+    }
+  }, [step]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchAction = async () => {
+    if (selectedIds.length === 0) {
+      Alert.alert('Aviso', 'Selecione ao menos um item.');
+      return;
+    }
+
+    const novoStatus = action === 'reativar' ? 1 : 0;
+    const confirmMsg = action === 'remover' 
+      ? `Deseja remover ${selectedIds.length} item(ns)? Eles não aparecerão em novas listas.` 
+      : `Deseja reativar ${selectedIds.length} item(ns)?`;
+
+    Alert.alert(
+      "Confirmar Ação",
+      confirmMsg,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Confirmar", 
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await CatalogoModel.alterarStatusLote(db, category!, selectedIds, novoStatus);
+              Alert.alert('Sucesso', 'Operação realizada com sucesso!');
+              setStep(1);
+            } catch (error) {
+              console.error(error);
+              Alert.alert('Erro', 'Ocorreu um erro ao processar o lote.');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const renderBatchFlow = () => (
+    <View style={styles.batchContainer}>
+      <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+        Selecione os itens para {action === 'remover' ? 'desativar' : 'reativar'}:
+      </Text>
+
+      {items.length === 0 && !loading && (
+        <View style={styles.emptyContainer}>
+          <Text style={{ color: colors.textMuted }}>Nenhum item encontrado nesta categoria.</Text>
+        </View>
+      )}
+
+      {items.map(item => (
+        <TouchableOpacity 
+          key={item.id}
+          style={[styles.listItem, { backgroundColor: colors.card, borderColor: selectedIds.includes(item.id) ? colors.primary : 'transparent' }]}
+          onPress={() => toggleSelect(item.id)}
+        >
+          <Ionicons 
+            name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"} 
+            size={24} 
+            color={selectedIds.includes(item.id) ? colors.primary : colors.textMuted} 
+          />
+          <View style={styles.listItemText}>
+            <Text style={[styles.itemNome, { color: colors.text }]}>{item.nome}</Text>
+            <Text style={[styles.itemCodigo, { color: colors.textMuted }]}>{item.codigo}</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+
+      <TouchableOpacity 
+        style={[styles.submitButton, { backgroundColor: action === 'remover' ? '#EF4444' : '#10B981', opacity: loading || items.length === 0 ? 0.6 : 1 }]}
+        onPress={handleBatchAction}
+        disabled={loading || items.length === 0}
+      >
+        <Text style={styles.submitButtonText}>
+          {action === 'remover' ? 'Remover Selecionados' : 'Reativar Selecionados'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderStep3 = () => (
     <View style={styles.content}>
       <View style={styles.headerRow}>
@@ -182,14 +290,7 @@ export function GerenciarCatalogo() {
         </Text>
       </View>
       
-      {action === 'adicionar' ? renderAddForm() : (
-        <View style={[styles.placeholder, { borderColor: colors.border }]}>
-          <Ionicons name="construct-outline" size={48} color={colors.textMuted} />
-          <Text style={{ color: colors.textMuted, marginTop: 12 }}>
-            Interface de {action} em lote em breve...
-          </Text>
-        </View>
-      )}
+      {action === 'adicionar' ? renderAddForm() : renderBatchFlow()}
 
       <TouchableOpacity 
         style={[styles.resetButton, { borderColor: colors.primary }]}
@@ -262,5 +363,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  submitButtonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
+  submitButtonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  batchContainer: { marginTop: 10 },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+  },
+  listItemText: { marginLeft: 16 },
+  itemNome: { fontSize: 16, fontWeight: 'bold' },
+  itemCodigo: { fontSize: 14, marginTop: 2 },
+  emptyContainer: { 
+    padding: 40, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  }
 });
