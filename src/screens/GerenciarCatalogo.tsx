@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../contexts/ThemeContext';
@@ -212,29 +212,33 @@ export function GerenciarCatalogo() {
       ? `Deseja remover ${selectedIds.length} item(ns)? Eles não aparecerão em novas listas.` 
       : `Deseja reativar ${selectedIds.length} item(ns)?`;
 
-    Alert.alert(
-      "Confirmar Ação",
-      confirmMsg,
-      [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Confirmar", 
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await CatalogoModel.alterarStatusLote(db, category!, selectedIds, novoStatus);
-              Alert.alert('Sucesso', 'Operação realizada com sucesso!');
-              setStep(1);
-            } catch (error) {
-              console.error(error);
-              Alert.alert('Erro', 'Ocorreu um erro ao processar o lote.');
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
+    const executeAction = async () => {
+      setLoading(true);
+      try {
+        await CatalogoModel.alterarStatusLote(db, category!, selectedIds, novoStatus);
+        Alert.alert('Sucesso', 'Operação realizada com sucesso!');
+        setStep(1);
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Erro', 'Ocorreu um erro ao processar o lote.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(confirmMsg);
+      if (confirmed) executeAction();
+    } else {
+      Alert.alert(
+        "Confirmar Ação",
+        confirmMsg,
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Confirmar", onPress: executeAction }
+        ]
+      );
+    }
   };
 
   const renderBatchFlow = () => (
