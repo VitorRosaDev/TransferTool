@@ -6,7 +6,7 @@ O **TransferTool** é um aplicativo mobile focado na operação logística de al
 
 - **Coleta Offline-First:** Arquitetura construída inteiramente sobre SQLite local, garantindo zero dependência de conexão de internet durante a separação de carga.
 - **Gestão de Catálogos Embutida:** Catálogo local de itens (perecíveis e não perecíveis), depósitos de origem e escolas de destino com suporte a exclusão lógica (Soft Delete) para manter o histórico de transferências intacto.
-- **Ciclo de Vida Rigoroso (State Pattern):** 
+- **Ciclo de Vida Rigoroso (State Pattern):**
   - 🟡 **Rascunho:** Lista livre para adição e edição.
   - 🔵 **Consolidada:** Lista bloqueada para edição durante a separação física.
   - 🟢 **Exportada:** Geração do payload (JSON) padronizado para integração futura com sistemas de ERP (Robotic Process Automation - RPA).
@@ -22,6 +22,7 @@ O **TransferTool** é um aplicativo mobile focado na operação logística de al
 ## 📋 Pré-requisitos
 
 Para executar o projeto localmente, você precisará ter instalado:
+
 - Node.js (v18+)
 - npm ou yarn
 - Expo CLI
@@ -40,7 +41,9 @@ Para executar o projeto localmente, você precisará ter instalado:
 4. Utilize o Expo Go no seu dispositivo Android/iOS para ler o QR Code ou rode num emulador local.
 
 ## 🗄️ Estrutura de Dados (Seed)
+
 No primeiro carregamento, o aplicativo inicializa o banco de dados e insere automaticamente a relação oficial de itens, origens e destinos. Não é necessária configuração manual de banco de dados por parte do desenvolvedor frontend.
 
 ---
+
 *Projeto arquitetado e mantido sob versionamento estrito de qualidade e padronização.*
