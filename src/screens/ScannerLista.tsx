@@ -206,8 +206,6 @@ export function ScannerLista() {
     }
   };
 
-  const isConsolidadaCheck = listaDetalhes?.status === 'Consolidada';
-
   // Renders
   const renderItemCarrinho = ({ item }: { item: ItemCarrinho }) => (
     <TouchableOpacity 

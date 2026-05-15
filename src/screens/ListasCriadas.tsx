@@ -96,12 +96,14 @@ export function ListasCriadas() {
             <View style={[styles.badge, isConsolidada ? styles.badgeConsolidada : styles.badgeRascunho]}>
               <Text style={styles.badgeText}>{item.status}</Text>
             </View>
-            <TouchableOpacity 
-              style={styles.deleteBtn} 
-              onPress={(e) => { e.stopPropagation(); handleDeletarLista(item.id); }}
-            >
-              <Ionicons name="trash-outline" size={24} color={colors.danger} />
-            </TouchableOpacity>
+            {!isConsolidada && (
+              <TouchableOpacity 
+                style={styles.deleteBtn} 
+                onPress={(e) => { e.stopPropagation(); handleDeletarLista(item.id); }}
+              >
+                <Ionicons name="trash-outline" size={24} color={colors.danger} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
