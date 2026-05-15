@@ -1,5 +1,6 @@
-import React from 'react';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import React, { useState } from 'react';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Home } from '../screens/Home';
 import { NovaLista } from '../screens/NovaLista';
 import { GerenciarCatalogo } from '../screens/GerenciarCatalogo';
@@ -10,15 +11,41 @@ import { Ionicons } from '@expo/vector-icons';
 const Drawer = createDrawerNavigator();
 
 export function DrawerRoutes() {
+  const [isDark, setIsDark] = useState(false);
+
+  const CustomDrawerContent = (props: any) => {
+    return (
+      <View style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
+        <DrawerContentScrollView {...props}>
+          <DrawerItemList {...props} />
+        </DrawerContentScrollView>
+        <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: isDark ? '#374151' : '#E5E7EB' }}>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center' }} 
+            onPress={() => setIsDark(!isDark)}
+          >
+            <Ionicons name={isDark ? "sunny" : "moon"} size={24} color={isDark ? "#FBBF24" : "#4B5563"} />
+            <Text style={{ marginLeft: 16, fontSize: 16, color: isDark ? '#F3F4F6' : '#1F2937', fontWeight: 'bold' }}>
+              {isDark ? 'Modo Claro' : 'Modo Escuro'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <Drawer.Navigator
       initialRouteName="Home"
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle: { backgroundColor: '#2563EB' },
+        headerStyle: { backgroundColor: isDark ? '#111827' : '#2563EB' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: 'bold' },
-        drawerActiveTintColor: '#2563EB',
+        drawerActiveTintColor: isDark ? '#60A5FA' : '#2563EB',
+        drawerInactiveTintColor: isDark ? '#9CA3AF' : '#4B5563',
         drawerLabelStyle: { fontSize: 16 },
+        drawerStyle: { backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }
       }}
     >
       <Drawer.Screen 
