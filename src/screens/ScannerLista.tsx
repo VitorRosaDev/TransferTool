@@ -291,6 +291,10 @@ export function ScannerLista() {
             keyExtractor={item => item.id.toString()}
             renderItem={renderItemCarrinho}
             contentContainerStyle={{ paddingBottom: isConsolidada ? 20 : 100 }}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
           />
         )}
       </View>
