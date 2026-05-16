@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
   },
-  suggestionText: { fontSize: 16, fontWeight: '500' },
+  suggestionText: { fontSize: 16, fontWeight: '500', flexShrink: 1 },
   suggestionCode: { fontSize: 14, marginTop: 4 },
   
   selectionArea: { flex: 1, marginTop: 24 },
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   selectedLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  selectedValue: { fontSize: 18, fontWeight: 'bold', marginTop: 4 },
+  selectedValue: { fontSize: 18, fontWeight: 'bold', marginTop: 4, flexShrink: 1 },
   
   footer: { padding: 24, borderTopWidth: 1 },
   btnContinue: {

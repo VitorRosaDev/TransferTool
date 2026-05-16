@@ -386,8 +386,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 2,
   },
-  listItemText: { marginLeft: 16 },
-  itemNome: { fontSize: 16, fontWeight: 'bold' },
+  listItemText: { marginLeft: 16, flex: 1 },
+  itemNome: { fontSize: 16, fontWeight: 'bold', flexShrink: 1 },
   itemCodigo: { fontSize: 14, marginTop: 2 },
   emptyContainer: { 
     padding: 40, 

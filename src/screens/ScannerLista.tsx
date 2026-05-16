@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Modal, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, ListaDetalhes } from '../models/ListaModel';
 import { ItemModel, ProdutoCatalogo, ItemCarrinho } from '../models/ItemModel';
 import { useTheme } from '../contexts/ThemeContext';
+import { ExportacaoModel } from '../models/ExportacaoModel';
 
 // Utilitário para máscara de data DD/MM/YYYY
 const formatDate = (text: string) => {
@@ -34,6 +36,7 @@ export function ScannerLista() {
   const route = useRoute();
   const navigation = useNavigation<any>();
   const db = useSQLiteContext();
+  const insets = useSafeAreaInsets();
   const { listaId } = route.params as { listaId: number };
 
   const [listaDetalhes, setListaDetalhes] = useState<ListaDetalhes | null>(null);
@@ -50,7 +53,7 @@ export function ScannerLista() {
   const [validade, setValidade] = useState('');
 
   const { colors } = useTheme();
-  const isConsolidada = listaDetalhes?.status === 'Consolidada';
+  const isEditable = listaDetalhes?.status === 'Rascunho';
 
   // 1. Carregar Dados Iniciais
   const loadDetalhesLista = useCallback(async () => {
@@ -71,10 +74,12 @@ export function ScannerLista() {
     }
   }, [db, listaId]);
 
-  useEffect(() => {
-    loadDetalhesLista();
-    loadCarrinho();
-  }, [loadDetalhesLista, loadCarrinho]);
+  useFocusEffect(
+    useCallback(() => {
+      loadDetalhesLista();
+      loadCarrinho();
+    }, [loadDetalhesLista, loadCarrinho])
+  );
 
   // 2. Busca Dinâmica de Itens
   useEffect(() => {
@@ -206,12 +211,24 @@ export function ScannerLista() {
     }
   };
 
+  const handleExportar = async () => {
+    try {
+      const payload = await ExportacaoModel.gerarPayload(db, listaId);
+      await ExportacaoModel.exportarArquivo(payload);
+      await ExportacaoModel.marcarComoExportada(db, listaId);
+      loadDetalhesLista();
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Falha ao gerar arquivo de exportação.");
+    }
+  };
+
   // Renders
   const renderItemCarrinho = ({ item }: { item: ItemCarrinho }) => (
     <TouchableOpacity 
       style={[styles.carrinhoCard, { backgroundColor: colors.card }]} 
-      activeOpacity={isConsolidada ? 1 : 0.7} 
-      onPress={() => !isConsolidada && openModalEdit(item)}
+      activeOpacity={!isEditable ? 1 : 0.7} 
+      onPress={() => isEditable && openModalEdit(item)}
     >
       <View style={{ flex: 1 }}>
         <Text style={[styles.itemTitle, { color: colors.text }]}>{item.descricao}</Text>
@@ -223,7 +240,7 @@ export function ScannerLista() {
       <View style={[styles.qtdContainer, { backgroundColor: colors.background }]}>
         <Text style={[styles.qtdText, { color: colors.primary }]}>{item.quantidade}</Text>
       </View>
-      {!isConsolidada && (
+      {isEditable && (
         <TouchableOpacity style={styles.deleteBtn} onPress={() => handleRemoverItem(item.id)}>
           <Ionicons name="trash-outline" size={24} color={colors.danger} />
         </TouchableOpacity>
@@ -234,13 +251,22 @@ export function ScannerLista() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* CABEÇALHO */}
-      <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+      <View style={[styles.header, { backgroundColor: colors.headerBg, paddingTop: insets.top || 20 }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => navigation.navigate('ListasCriadas')} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color="#FFF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Lista #{listaId}</Text>
-          <View style={styles.badge}><Text style={styles.badgeText}>{listaDetalhes?.status}</Text></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Lista #{listaId}</Text>
+          </View>
+          <View style={[
+            styles.badge,
+            listaDetalhes?.status === 'Consolidada' ? styles.badgeConsolidada :
+            listaDetalhes?.status === 'Exportada' ? styles.badgeExportada :
+            styles.badgeRascunho
+          ]}>
+            <Text style={styles.badgeText}>{listaDetalhes?.status}</Text>
+          </View>
         </View>
         <View style={[styles.routeContainer, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
           <Text style={[styles.routeText]}>{listaDetalhes?.origem_nome}</Text>
@@ -250,7 +276,7 @@ export function ScannerLista() {
       </View>
 
       {/* BARRA DE PESQUISA */}
-      {!isConsolidada && (
+      {isEditable && (
         <View style={styles.searchSection}>
           <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Ionicons name="barcode-outline" size={20} color={colors.textMuted} style={styles.searchIcon} />
@@ -266,7 +292,7 @@ export function ScannerLista() {
             <View style={[styles.suggestionList, { backgroundColor: colors.card }]}>
               {suggestions.map(s => (
                 <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModal(s)}>
-                  <View>
+                  <View style={{ flex: 1, marginRight: 8 }}>
                     <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
                     <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
                   </View>
@@ -279,7 +305,7 @@ export function ScannerLista() {
       )}
 
       {/* CARRINHO */}
-      <View style={[styles.carrinhoSection, isConsolidada && { marginTop: 20 }]}>
+      <View style={[styles.carrinhoSection, !isEditable && { marginTop: 20 }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Itens Adicionados ({carrinho.length})</Text>
         {carrinho.length === 0 ? (
           <View style={styles.emptyState}>
@@ -291,7 +317,7 @@ export function ScannerLista() {
             data={carrinho}
             keyExtractor={item => item.id.toString()}
             renderItem={renderItemCarrinho}
-            contentContainerStyle={{ paddingBottom: isConsolidada ? 20 : 100 }}
+            contentContainerStyle={{ paddingBottom: !isEditable ? 20 : 100 }}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={5}
@@ -301,11 +327,18 @@ export function ScannerLista() {
       </View>
 
       {/* FOOTER BUTTON */}
-      {!isConsolidada && (
+      {isEditable ? (
         <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
           <TouchableOpacity style={[styles.consolidarBtn, { backgroundColor: colors.success }]} onPress={handleConsolidar}>
             <Text style={styles.consolidarText}>Consolidar Carga</Text>
             <Ionicons name="checkmark-done" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      ) : (listaDetalhes?.status === 'Consolidada' || listaDetalhes?.status === 'Exportada') && (
+        <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+          <TouchableOpacity style={[styles.consolidarBtn, { backgroundColor: colors.primary }]} onPress={handleExportar}>
+            <Text style={styles.consolidarText}>Gerar JSON</Text>
+            <Ionicons name="share-social-outline" size={24} color="#FFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -369,12 +402,15 @@ export function ScannerLista() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingTop: 20, paddingBottom: 20, paddingHorizontal: 20 },
+  header: { paddingBottom: 20, paddingHorizontal: 20 },
   headerTop: { flexDirection: 'row', alignItems: 'center' },
   backBtn: { marginRight: 16 },
   headerTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold', flex: 1 },
-  badge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  badgeRascunho: { backgroundColor: '#FEF3C7' },
+  badgeConsolidada: { backgroundColor: '#D1FAE5' },
+  badgeExportada: { backgroundColor: '#DBEAFE' },
+  badgeText: { color: '#1F2937', fontSize: 12, fontWeight: 'bold' },
   routeContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 16, padding: 12, borderRadius: 8 },
   routeText: { color: '#FFF', fontSize: 14, fontWeight: '600', flex: 1 },
   
@@ -406,7 +442,7 @@ const styles = StyleSheet.create({
     })
   },
   suggestionCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
-  sugDesc: { fontSize: 16, fontWeight: '600' },
+  sugDesc: { fontSize: 16, fontWeight: '600', flexShrink: 1 },
   sugCod: { fontSize: 14 },
 
   carrinhoSection: { flex: 1, paddingHorizontal: 20 },

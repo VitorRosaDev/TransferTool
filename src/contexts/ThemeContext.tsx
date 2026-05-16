@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Platform } from 'react-native';
 
 export type ThemeColors = {
   background: string;
@@ -30,19 +31,19 @@ const lightTheme: ThemeColors = {
   primary: '#2563EB',
   danger: '#EF4444',
   success: '#10B981',
-  headerBg: '#2563EB', // Fundo azul no header light
+  headerBg: '#2563EB',
 };
 
 const darkTheme: ThemeColors = {
-  background: '#000000',     // All Black X
-  card: '#16181C',           // Cards
-  text: '#E7E9EA',           // Texto Branco
-  textMuted: '#71767A',      // Texto Cinza
-  border: '#2F3336',         // Bordas escuras
-  primary: '#2563EB',        // Mantido azul
-  danger: '#F4212E',         // Vermelho estilo X
-  success: '#00BA7C',        // Verde estilo X
-  headerBg: '#000000',       // Header All Black
+  background: '#000000',
+  card: '#16181C',
+  text: '#E7E9EA',
+  textMuted: '#71767A',
+  border: '#2F3336',
+  primary: '#2563EB',
+  danger: '#F4212E',
+  success: '#00BA7C',
+  headerBg: '#000000',
 };
 
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
@@ -50,8 +51,24 @@ const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [themeType, setThemeType] = useState<ThemeType>('light');
 
+  // Carregar tema persistido
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const saved = localStorage.getItem('@theme_type');
+      if (saved === 'light' || saved === 'dark') {
+        setThemeType(saved as ThemeType);
+      }
+    }
+  }, []);
+
   const toggleTheme = () => {
-    setThemeType(prev => (prev === 'light' ? 'dark' : 'light'));
+    setThemeType(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      if (Platform.OS === 'web') {
+        localStorage.setItem('@theme_type', next);
+      }
+      return next;
+    });
   };
 
   const isDark = themeType === 'dark';

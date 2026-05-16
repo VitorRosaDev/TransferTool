@@ -8,8 +8,8 @@ O **TransferTool** é um aplicativo mobile focado na operação logística de al
 - **Gestão de Catálogos Embutida:** Catálogo local de itens (perecíveis e não perecíveis), depósitos de origem e escolas de destino com suporte a exclusão lógica (Soft Delete) para manter o histórico de transferências intacto.
 - **Ciclo de Vida Rigoroso (State Pattern):**
   - 🟡 **Rascunho:** Lista livre para adição e edição.
-  - 🔵 **Consolidada:** Lista bloqueada para edição durante a separação física.
-  - 🟢 **Exportada:** Geração do payload (JSON) padronizado para integração futura com sistemas de ERP (Robotic Process Automation - RPA).
+  - 🟢 **Consolidada:** Lista bloqueada para edição após separação física.
+  - 🔵 **Exportada:** Geração do payload (JSON) para integração RPA.
 - **Limpeza Automática:** Mecanismo integrado de descarte automático para listas consolidadas antigas (Garbage Collection).
 
 ## 🛠️ Tecnologias Utilizadas
