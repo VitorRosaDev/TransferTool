@@ -150,7 +150,7 @@ export function NovaLista() {
           onPress={step === 1 ? handleNext : handleConfirm}
         >
           <Text style={styles.btnContinueText}>
-            {step === 1 ? 'Continuar para Destino' : 'Finalizar e Iniciar Lista'}
+            {step === 1 ? 'Continuar para Destino' : 'Continuar e Iniciar Lista'}
           </Text>
           <Ionicons name="arrow-forward" size={20} color="#FFF" />
         </TouchableOpacity>

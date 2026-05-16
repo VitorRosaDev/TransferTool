@@ -29,16 +29,23 @@ Para executar o projeto localmente, você precisará ter instalado:
 
 ## ⚙️ Instalação e Execução
 
-1. Clone o repositório (privado).
+1. Clone o repositório.
 2. Instale as dependências:
    ```bash
    npm install
    ```
-3. Inicie o servidor de desenvolvimento do Expo:
-   ```bash
-   npm start
+3. Inicie o servidor de desenvolvimento para dispositivo físico (LAN):
+   ```powershell
+   $env:EXPO_OFFLINE=1; npx expo start --lan -c
    ```
-4. Utilize o Expo Go no seu dispositivo Android/iOS para ler o QR Code ou rode num emulador local.
+   *Nota: O uso de `-c` e `EXPO_OFFLINE` é recomendado para evitar conflitos de cache no SDK 54.*
+
+## 📂 Fluxo de Exportação RPA
+O app gera arquivos JSON padronizados para o agente robótico:
+1. Finalize a conferência dos itens na tela de **Scanner**.
+2. Clique em **Consolidar Carga**.
+3. Use o botão **Gerar JSON** (disponível no Histórico ou no Scanner) para abrir a caixa de compartilhamento nativa.
+4. O arquivo será nomeado como `transferencia_[ID]_[DESTINO].json`.
 
 ## 🗄️ Estrutura de Dados (Seed)
 
