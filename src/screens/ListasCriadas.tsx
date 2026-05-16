@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, ListaHist } from '../models/ListaModel';
 import { useTheme } from '../contexts/ThemeContext';
+import { ExportacaoModel } from '../models/ExportacaoModel';
 
 
 
@@ -55,6 +56,18 @@ export function ListasCriadas() {
     }, [loadListas])
   );
 
+  const handleExportar = async (id: number) => {
+    try {
+      const payload = await ExportacaoModel.gerarPayload(db, id);
+      await ExportacaoModel.exportarArquivo(payload);
+      await ExportacaoModel.marcarComoExportada(db, id);
+      loadListas();
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Falha ao gerar arquivo de exportação.");
+    }
+  };
+
   const handleDeletarLista = async (id: number) => {
     const deleteAction = async () => {
       try {
@@ -82,6 +95,7 @@ export function ListasCriadas() {
 
   const renderItem = ({ item }: { item: ListaHist }) => {
     const isConsolidada = item.status === 'Consolidada';
+    const isExportada = item.status === 'Exportada';
     const diasRestantes = getDaysToExpiration(item.data_criacao);
 
     return (
@@ -93,7 +107,11 @@ export function ListasCriadas() {
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>Lista #{item.id}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={[styles.badge, isConsolidada ? styles.badgeConsolidada : styles.badgeRascunho]}>
+            <View style={[
+              styles.badge, 
+              isConsolidada ? styles.badgeConsolidada : 
+              isExportada ? styles.badgeExportada : styles.badgeRascunho
+            ]}>
               <Text style={styles.badgeText}>{item.status}</Text>
             </View>
             <TouchableOpacity 
@@ -112,12 +130,22 @@ export function ListasCriadas() {
         </View>
 
         <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
-          <View style={styles.footerInfo}>
-            <Ionicons name="calendar-outline" size={16} color={colors.textMuted} style={{ marginRight: 4 }} />
-            <Text style={[styles.dateText, { color: colors.textMuted }]}>{formatFriendlyDate(item.data_criacao)}</Text>
-          </View>
+          {(isConsolidada || isExportada) ? (
+            <TouchableOpacity 
+              style={[styles.exportBtn, { backgroundColor: colors.primary }]}
+              onPress={(e) => { e.stopPropagation(); handleExportar(item.id); }}
+            >
+              <Text style={styles.exportBtnText}>Gerar JSON</Text>
+              <Ionicons name="download-outline" size={18} color="#FFF" />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.footerInfo}>
+              <Ionicons name="calendar-outline" size={16} color={colors.textMuted} style={{ marginRight: 4 }} />
+              <Text style={[styles.dateText, { color: colors.textMuted }]}>{formatFriendlyDate(item.data_criacao)}</Text>
+            </View>
+          )}
           <Text style={[styles.expirationText, { color: colors.textMuted }, diasRestantes <= 2 && { color: colors.danger }]}>
-            Auto-exclusão em {diasRestantes} dia(s)
+            {diasRestantes}d restantes
           </Text>
         </View>
       </TouchableOpacity>
@@ -186,8 +214,19 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginRight: 8 },
   badgeRascunho: { backgroundColor: '#FEF3C7' },
   badgeConsolidada: { backgroundColor: '#D1FAE5' },
+  badgeExportada: { backgroundColor: '#DBEAFE' },
   badgeText: { fontSize: 12, fontWeight: 'bold', color: '#1F2937' },
   deleteBtn: { padding: 4 },
+
+  exportBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 8,
+    gap: 6
+  },
+  exportBtnText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
 
   routeContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 8, marginBottom: 12 },
   routeText: { fontSize: 14, fontWeight: '600', flex: 1 },
