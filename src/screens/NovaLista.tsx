@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, Suggestion } from '../models/ListaModel';
@@ -9,73 +9,112 @@ import { useNavigation } from '@react-navigation/native';
 export function NovaLista() {
   const db = useSQLiteContext();
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
 
-  // Estados do Wizard
-  const [step, setStep] = useState<1 | 2>(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  
-  // Seleções
+  // Seleções de Origem e Destino
   const [origem, setOrigem] = useState<Suggestion | null>(null);
   const [destino, setDestino] = useState<Suggestion | null>(null);
 
-  const { colors } = useTheme();
+  // Estados de busca individuais
+  const [searchQueryOrigem, setSearchQueryOrigem] = useState('');
+  const [searchQueryDestino, setSearchQueryDestino] = useState('');
 
-  // Efeito de Busca em Tempo Real
+  // Estados de sugestões individuais
+  const [suggestionsOrigem, setSuggestionsOrigem] = useState<Suggestion[]>([]);
+  const [suggestionsDestino, setSuggestionsDestino] = useState<Suggestion[]>([]);
+
+  // Estados de foco para pré-visualização ao tocar
+  const [isFocusedOrigem, setIsFocusedOrigem] = useState(false);
+  const [isFocusedDestino, setIsFocusedDestino] = useState(false);
+
+  // Busca Reativa de Origens (com preview instantâneo ao focar)
   useEffect(() => {
-    async function fetchSuggestions() {
-      if (searchQuery.trim().length === 0) {
-        setSuggestions([]);
+    async function fetchOrigemSuggestions() {
+      if (!isFocusedOrigem && searchQueryOrigem.trim().length === 0) {
+        setSuggestionsOrigem([]);
         return;
       }
-      
       try {
-        const queryUnaccented = searchQuery.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-        if (step === 1) {
-          const result = await ListaModel.buscarOrigens(db, searchQuery, queryUnaccented);
-          setSuggestions(result);
-        } else {
-          const result = await ListaModel.buscarDestinos(db, searchQuery, queryUnaccented);
-          setSuggestions(result);
-        }
+        const queryUnaccented = searchQueryOrigem.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const result = await ListaModel.buscarOrigens(db, searchQueryOrigem, queryUnaccented);
+        setSuggestionsOrigem(result);
       } catch (e) {
-        console.error("Erro ao buscar sugestões:", e);
+        console.error("Erro ao buscar origens:", e);
       }
     }
 
     const delayDebounceFn = setTimeout(() => {
-      fetchSuggestions();
-    }, 300);
+      fetchOrigemSuggestions();
+    }, 150);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, step]);
+  }, [searchQueryOrigem, isFocusedOrigem]);
 
-  const handleSelect = (item: Suggestion) => {
-    if (step === 1) {
-      setOrigem(item);
-      setSearchQuery('');
-      setSuggestions([]);
-    } else {
-      setDestino(item);
-      setSearchQuery('');
-      setSuggestions([]);
+  // Busca Reativa de Destinos (com preview instantâneo ao focar)
+  useEffect(() => {
+    async function fetchDestinoSuggestions() {
+      if (!isFocusedDestino && searchQueryDestino.trim().length === 0) {
+        setSuggestionsDestino([]);
+        return;
+      }
+      try {
+        const queryUnaccented = searchQueryDestino.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const result = await ListaModel.buscarDestinos(db, searchQueryDestino, queryUnaccented);
+        setSuggestionsDestino(result);
+      } catch (e) {
+        console.error("Erro ao buscar destinos:", e);
+      }
     }
+
+    const delayDebounceFn = setTimeout(() => {
+      fetchDestinoSuggestions();
+    }, 150);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQueryDestino, isFocusedDestino]);
+
+  // Handlers de Seleção
+  const handleSelectOrigem = (item: Suggestion) => {
+    setOrigem(item);
+    setSearchQueryOrigem('');
+    setSuggestionsOrigem([]);
+    setIsFocusedOrigem(false);
   };
 
-  const handleNext = () => {
-    if (step === 1 && origem) setStep(2);
+  const handleSelectDestino = (item: Suggestion) => {
+    setDestino(item);
+    setSearchQueryDestino('');
+    setSuggestionsDestino([]);
+    setIsFocusedDestino(false);
   };
 
+  // Handlers de Exclusão/Limpeza para erros de entrada
+  const handleClearOrigem = () => {
+    setOrigem(null);
+    setSearchQueryOrigem('');
+    setSuggestionsOrigem([]);
+    // Quando limpa a origem, por lógica de cascata limpamos o destino também
+    setDestino(null);
+    setSearchQueryDestino('');
+    setSuggestionsDestino([]);
+  };
+
+  const handleClearDestino = () => {
+    setDestino(null);
+    setSearchQueryDestino('');
+    setSuggestionsDestino([]);
+  };
+
+  // Confirmação final e gravação de rascunho
   const handleConfirm = async () => {
     if (!origem || !destino) return;
 
     try {
       const novaListaId = await ListaModel.criarRascunho(db, origem.id, destino.id);
-      setStep(1);
       setOrigem(null);
       setDestino(null);
-      setSearchQuery('');
+      setSearchQueryOrigem('');
+      setSearchQueryDestino('');
       navigation.navigate('ListasCriadas', { listaId: novaListaId });
     } catch (e) {
       console.error("Erro ao iniciar lista:", e);
@@ -83,76 +122,163 @@ export function NovaLista() {
     }
   };
 
-  const isNextDisabled = step === 1 ? !origem : !destino;
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Cabeçalho Fixo Unificado */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => step === 2 ? setStep(1) : navigation.goBack()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Passo {step} de 2</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Montar Nova Carga</Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {step === 1 ? 'Selecione a Origem' : 'Selecione o Destino'}
-        </Text>
+      {/* Conteúdo com Acordeon */}
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.title, { color: colors.text }]}>Origem e Destino</Text>
         <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-          {step === 1 ? 'De onde os itens estão saindo?' : 'Para onde os itens vão?'}
+          Defina os depósitos da carga local offline
         </Text>
 
-        <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Ionicons name="search" size={20} color={colors.textMuted} />
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder="Digite para pesquisar..."
-            placeholderTextColor={colors.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
+        {/* ==================== SEÇÃO 1: ORIGEM ==================== */}
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionLabel, { color: colors.text }]}>Origem da Carga</Text>
+          
+          {origem === null ? (
+            <View>
+              {/* Campo de Busca */}
+              <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: isFocusedOrigem ? colors.primary : colors.border }]}>
+                <Ionicons name="search" size={20} color={colors.textMuted} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Buscar depósito de origem..."
+                  placeholderTextColor={colors.textMuted}
+                  value={searchQueryOrigem}
+                  onChangeText={setSearchQueryOrigem}
+                  onFocus={() => setIsFocusedOrigem(true)}
+                  onBlur={() => setTimeout(() => setIsFocusedOrigem(false), 200)}
+                />
+                {searchQueryOrigem.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQueryOrigem('')}>
+                    <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Preview Rolável de Sugestões de Origem */}
+              {(isFocusedOrigem || searchQueryOrigem.length > 0) && suggestionsOrigem.length > 0 && (
+                <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                    {suggestionsOrigem.map(s => (
+                      <TouchableOpacity 
+                        key={s.id} 
+                        style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
+                        onPress={() => handleSelectOrigem(s)}
+                      >
+                        <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
+                        <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
+                          Código: {s.codigo}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+          ) : (
+            /* Card Consolidado com Opção de Exclusão */
+            <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+              <View style={styles.selectedCardLeft}>
+                <Ionicons name="business" size={24} color={colors.primary} />
+                <View style={styles.selectedCardText}>
+                  <Text style={[styles.selectedValue, { color: colors.text }]}>{origem.nome}</Text>
+                  <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Código: {origem.codigo}</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={handleClearOrigem} style={styles.deleteBtn}>
+                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
-        {suggestions.length > 0 && (
-          <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {suggestions.map(s => (
-              <TouchableOpacity key={s.id} style={[styles.suggestionItem, { borderBottomColor: colors.border }]} onPress={() => handleSelect(s)}>
-                <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
-                <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
-                  Código: {step === 1 ? s.codigo : s.codigo_deposito}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        {/* ==================== SEÇÃO 2: DESTINO (ACORDEON) ==================== */}
+        {origem !== null && (
+          <View style={[styles.sectionContainer, { marginTop: 28 }]}>
+            <Text style={[styles.sectionLabel, { color: colors.text }]}>Destino da Carga</Text>
+            
+            {destino === null ? (
+              <View>
+                {/* Campo de Busca */}
+                <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: isFocusedDestino ? colors.primary : colors.border }]}>
+                  <Ionicons name="search" size={20} color={colors.textMuted} />
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="Buscar escola de destino..."
+                    placeholderTextColor={colors.textMuted}
+                    value={searchQueryDestino}
+                    onChangeText={setSearchQueryDestino}
+                    onFocus={() => setIsFocusedDestino(true)}
+                    onBlur={() => setTimeout(() => setIsFocusedDestino(false), 200)}
+                  />
+                  {searchQueryDestino.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQueryDestino('')}>
+                      <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Preview Rolável de Sugestões de Destino */}
+                {(isFocusedDestino || searchQueryDestino.length > 0) && suggestionsDestino.length > 0 && (
+                  <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                      {suggestionsDestino.map(s => (
+                        <TouchableOpacity 
+                          key={s.id} 
+                          style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
+                          onPress={() => handleSelectDestino(s)}
+                        >
+                          <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
+                          <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
+                            Código: {s.codigo_deposito}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            ) : (
+              /* Card Consolidado com Opção de Exclusão */
+              <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: '#10B981' }]}>
+                <View style={styles.selectedCardLeft}>
+                  <Ionicons name="school" size={24} color="#10B981" />
+                  <View style={styles.selectedCardText}>
+                    <Text style={[styles.selectedValue, { color: colors.text }]}>{destino.nome}</Text>
+                    <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Código: {destino.codigo_deposito}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={handleClearDestino} style={styles.deleteBtn}>
+                  <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
+      </ScrollView>
 
-        <View style={styles.selectionArea}>
-          {origem && (
-            <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Origem Selecionada</Text>
-              <Text style={[styles.selectedValue, { color: colors.text }]}>{origem.nome}</Text>
-            </View>
-          )}
-          {destino && (
-            <View style={[styles.selectedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.selectedLabel, { color: colors.textMuted }]}>Destino Selecionado</Text>
-              <Text style={[styles.selectedValue, { color: colors.text }]}>{destino.nome}</Text>
-            </View>
-          )}
-        </View>
-      </View>
-
+      {/* Rodapé Integrado de Confirmação */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity 
-          style={[styles.btnContinue, isNextDisabled ? styles.btnDisabled : { backgroundColor: colors.primary }]}
-          disabled={isNextDisabled}
-          onPress={step === 1 ? handleNext : handleConfirm}
+          style={[styles.btnContinue, (!origem || !destino) ? styles.btnDisabled : { backgroundColor: colors.primary }]}
+          disabled={!origem || !destino}
+          onPress={handleConfirm}
         >
-          <Text style={styles.btnContinueText}>
-            {step === 1 ? 'Continuar para Destino' : 'Continuar e Iniciar Lista'}
-          </Text>
-          <Ionicons name="arrow-forward" size={20} color="#FFF" />
+          <Text style={styles.btnContinueText}>Iniciar Carga</Text>
+          <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -170,12 +296,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backBtn: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 16 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', marginLeft: 16 },
   
   content: { flex: 1, padding: 24 },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 16, marginBottom: 24 },
   
+  sectionContainer: {
+    width: '100%',
+  },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -190,7 +324,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 12,
     borderWidth: 1,
-    maxHeight: 250,
+    maxHeight: 200,
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -211,17 +346,32 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   suggestionText: { fontSize: 16, fontWeight: '500', flexShrink: 1 },
-  suggestionCode: { fontSize: 14, marginTop: 4 },
+  suggestionCode: { fontSize: 13, marginTop: 4 },
   
-  selectionArea: { flex: 1, marginTop: 24 },
   selectedCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 16,
+    borderWidth: 2,
   },
-  selectedLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  selectedValue: { fontSize: 18, fontWeight: 'bold', marginTop: 4, flexShrink: 1 },
+  selectedCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 16,
+  },
+  selectedCardText: {
+    flex: 1,
+  },
+  selectedLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
+  selectedValue: { fontSize: 16, fontWeight: 'bold', flexShrink: 1 },
+  deleteBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
   
   footer: { padding: 24, borderTopWidth: 1 },
   btnContinue: {
@@ -232,6 +382,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
-  btnDisabled: { backgroundColor: '#9CA3AF' },
+  btnDisabled: { backgroundColor: '#374151', opacity: 0.5 },
   btnContinueText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' }
 });
