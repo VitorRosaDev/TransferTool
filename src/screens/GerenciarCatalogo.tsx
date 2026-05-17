@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../contexts/ThemeContext';
@@ -431,7 +431,10 @@ export function GerenciarCatalogo() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {step === 1 ? (
         <ScrollView style={styles.container}>
           {renderStep1()}
@@ -439,7 +442,7 @@ export function GerenciarCatalogo() {
       ) : (
         renderStep2()
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

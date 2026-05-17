@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,6 +65,7 @@ export function ListasCriadas() {
   const [editandoItemId, setEditandoItemId] = useState<number | null>(null);
   const [quantidade, setQuantidade] = useState('');
   const [validade, setValidade] = useState('');
+  const [isFocusedSearch, setIsFocusedSearch] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -119,10 +120,10 @@ export function ListasCriadas() {
     }
   }, [listas, route.params?.listaId]);
 
-  // Busca dinâmica de itens (Scanner Logic)
+  // Busca dinâmica de itens (Scanner Logic com pré-carregamento imediato ao focar)
   useEffect(() => {
     async function fetchItems() {
-      if (searchQuery.trim().length === 0) {
+      if (!isFocusedSearch && searchQuery.trim().length === 0) {
         setSuggestions([]);
         return;
       }
@@ -134,9 +135,9 @@ export function ListasCriadas() {
         console.error(e);
       }
     }
-    const delay = setTimeout(fetchItems, 300);
+    const delay = setTimeout(fetchItems, 150);
     return () => clearTimeout(delay);
-  }, [searchQuery, db]);
+  }, [searchQuery, isFocusedSearch, db]);
 
   const loadItens = async (id: number) => {
     setLoadingItens(true);
@@ -346,7 +347,10 @@ export function ListasCriadas() {
   const selectedLista = listas.find(l => l.id === selectedListaId);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={[styles.header, { backgroundColor: colors.headerBg, paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.openDrawer()}>
           <Ionicons name="menu" size={28} color="#FFF" />
@@ -407,11 +411,17 @@ export function ListasCriadas() {
                     placeholderTextColor={colors.textMuted}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
+                    onFocus={() => setIsFocusedSearch(true)}
+                    onBlur={() => setTimeout(() => setIsFocusedSearch(false), 200)}
                   />
                 </View>
                 {suggestions.length > 0 && (
                   <View style={styles.suggestionList}>
-                    <View style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <ScrollView 
+                      style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border }]}
+                      nestedScrollEnabled
+                      keyboardShouldPersistTaps="handled"
+                    >
                       {suggestions.map(s => (
                         <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
                           <View style={{ flex: 1 }}>
@@ -421,7 +431,7 @@ export function ListasCriadas() {
                           <Ionicons name="add-circle" size={24} color={colors.primary} />
                         </TouchableOpacity>
                       ))}
-                    </View>
+                    </ScrollView>
                   </View>
                 )}
               </View>
@@ -471,7 +481,10 @@ export function ListasCriadas() {
 
       {/* 4. MODAL DE INSERÇÃO INTEGRADO */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>{editandoItemId ? 'Editar Item' : 'Adicionar Item'}</Text>
@@ -515,9 +528,9 @@ export function ListasCriadas() {
               <Text style={styles.masterBtnText}>Salvar na Lista</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
