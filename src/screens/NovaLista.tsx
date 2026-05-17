@@ -76,7 +76,7 @@ export function NovaLista() {
       setOrigem(null);
       setDestino(null);
       setSearchQuery('');
-      navigation.navigate('ScannerLista', { listaId: novaListaId });
+      navigation.navigate('ListasCriadas', { listaId: novaListaId });
     } catch (e) {
       console.error("Erro ao iniciar lista:", e);
       Alert.alert("Erro", "Não foi possível criar a lista de rancho no banco de dados.");
