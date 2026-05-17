@@ -28,7 +28,6 @@ export function NovaLista() {
   // Estados de foco para pré-visualização ao tocar
   const [isFocusedOrigem, setIsFocusedOrigem] = useState(false);
   const [isFocusedDestino, setIsFocusedDestino] = useState(false);
-  const [parentScrollEnabled, setParentScrollEnabled] = useState(true);
 
   // Busca Reativa de Origens (com preview instantâneo ao focar)
   useEffect(() => {
@@ -82,7 +81,6 @@ export function NovaLista() {
     setSearchQueryOrigem('');
     setSuggestionsOrigem([]);
     setIsFocusedOrigem(false);
-    setParentScrollEnabled(true);
   };
 
   const handleSelectDestino = (item: Suggestion) => {
@@ -90,7 +88,6 @@ export function NovaLista() {
     setSearchQueryDestino('');
     setSuggestionsDestino([]);
     setIsFocusedDestino(false);
-    setParentScrollEnabled(true);
   };
 
   // Handlers de Exclusão/Limpeza para erros de entrada
@@ -110,33 +107,11 @@ export function NovaLista() {
     setSuggestionsDestino([]);
   };
 
-  const handleFocusOrigem = () => {
-    setIsFocusedOrigem(true);
-    setTimeout(() => {
-      setParentScrollEnabled(false);
-    }, 250);
-  };
-
-  const handleBlurOrigem = () => {
-    setTimeout(() => {
-      setIsFocusedOrigem(false);
-      setParentScrollEnabled(true);
-    }, 200);
-  };
-
   const handleFocusDestino = () => {
     setIsFocusedDestino(true);
-    scrollViewRef.current?.scrollToEnd({ animated: true });
     setTimeout(() => {
-      setParentScrollEnabled(false);
-    }, 250);
-  };
-
-  const handleBlurDestino = () => {
-    setTimeout(() => {
-      setIsFocusedDestino(false);
-      setParentScrollEnabled(true);
-    }, 200);
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 150);
   };
 
   // Confirmação final e gravação de rascunho
@@ -175,7 +150,6 @@ export function NovaLista() {
         style={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        scrollEnabled={parentScrollEnabled}
       >
         <Text style={[styles.title, { color: colors.text }]}>Origem e Destino</Text>
         <Text style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -197,8 +171,8 @@ export function NovaLista() {
                   placeholderTextColor={colors.textMuted}
                   value={searchQueryOrigem}
                   onChangeText={setSearchQueryOrigem}
-                  onFocus={handleFocusOrigem}
-                  onBlur={handleBlurOrigem}
+                  onFocus={() => setIsFocusedOrigem(true)}
+                  onBlur={() => setTimeout(() => setIsFocusedOrigem(false), 200)}
                 />
                 {searchQueryOrigem.length > 0 && (
                   <TouchableOpacity onPress={() => setSearchQueryOrigem('')}>
@@ -207,10 +181,10 @@ export function NovaLista() {
                 )}
               </View>
 
-              {/* Preview de Sugestões de Origem */}
+              {/* Preview Rolável de Sugestões de Origem */}
               {(isFocusedOrigem || searchQueryOrigem.length > 0) && suggestionsOrigem.length > 0 && (
                 <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="always">
+                  <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
                     {suggestionsOrigem.map(s => (
                       <TouchableOpacity 
                         key={s.id} 
@@ -261,7 +235,7 @@ export function NovaLista() {
                     value={searchQueryDestino}
                     onChangeText={setSearchQueryDestino}
                     onFocus={handleFocusDestino}
-                    onBlur={handleBlurDestino}
+                    onBlur={() => setTimeout(() => setIsFocusedDestino(false), 200)}
                   />
                   {searchQueryDestino.length > 0 && (
                     <TouchableOpacity onPress={() => setSearchQueryDestino('')}>
@@ -270,10 +244,10 @@ export function NovaLista() {
                   )}
                 </View>
 
-                {/* Preview de Sugestões de Destino */}
+                {/* Preview Rolável de Sugestões de Destino */}
                 {(isFocusedDestino || searchQueryDestino.length > 0) && suggestionsDestino.length > 0 && (
                   <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="always">
+                    <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
                       {suggestionsDestino.map(s => (
                         <TouchableOpacity 
                           key={s.id} 
@@ -310,18 +284,16 @@ export function NovaLista() {
       </ScrollView>
 
       {/* Rodapé Integrado de Confirmação */}
-      {!(isFocusedOrigem || isFocusedDestino || searchQueryOrigem.length > 0 || searchQueryDestino.length > 0) && (
-        <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-          <TouchableOpacity 
-            style={[styles.btnContinue, (!origem || !destino) ? styles.btnDisabled : { backgroundColor: colors.primary }]}
-            disabled={!origem || !destino}
-            onPress={handleConfirm}
-          >
-            <Text style={styles.btnContinueText}>Iniciar Carga</Text>
-            <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <TouchableOpacity 
+          style={[styles.btnContinue, (!origem || !destino) ? styles.btnDisabled : { backgroundColor: colors.primary }]}
+          disabled={!origem || !destino}
+          onPress={handleConfirm}
+        >
+          <Text style={styles.btnContinueText}>Iniciar Carga</Text>
+          <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }

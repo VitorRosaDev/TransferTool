@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,7 +65,6 @@ export function ListasCriadas() {
   const [editandoItemId, setEditandoItemId] = useState<number | null>(null);
   const [quantidade, setQuantidade] = useState('');
   const [validade, setValidade] = useState('');
-  const [isFocusedSearch, setIsFocusedSearch] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -120,10 +119,10 @@ export function ListasCriadas() {
     }
   }, [listas, route.params?.listaId]);
 
-  // Busca dinâmica de itens (Scanner Logic com pré-carregamento imediato ao focar)
+  // Busca dinâmica de itens (Scanner Logic)
   useEffect(() => {
     async function fetchItems() {
-      if (!isFocusedSearch && searchQuery.trim().length === 0) {
+      if (searchQuery.trim().length === 0) {
         setSuggestions([]);
         return;
       }
@@ -135,9 +134,9 @@ export function ListasCriadas() {
         console.error(e);
       }
     }
-    const delay = setTimeout(fetchItems, 150);
+    const delay = setTimeout(fetchItems, 300);
     return () => clearTimeout(delay);
-  }, [searchQuery, isFocusedSearch, db]);
+  }, [searchQuery, db]);
 
   const loadItens = async (id: number) => {
     setLoadingItens(true);
@@ -347,10 +346,7 @@ export function ListasCriadas() {
   const selectedLista = listas.find(l => l.id === selectedListaId);
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.headerBg, paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.openDrawer()}>
           <Ionicons name="menu" size={28} color="#FFF" />
@@ -378,26 +374,24 @@ export function ListasCriadas() {
       ) : (
         <>
           {/* 1. CARROSSEL (Topo - Vermelho) */}
-          {!(isFocusedSearch || searchQuery.length > 0) && (
-            <View style={styles.carouselContainer}>
-              <FlatList
-                ref={flatListRef}
-                data={listas}
-                horizontal
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderListaCard}
-                showsHorizontalScrollIndicator={false}
-                snapToInterval={SNAP_INTERVAL}
-                decelerationRate="fast"
-                onMomentumScrollEnd={onScrollEnd}
-                contentContainerStyle={{ paddingHorizontal: (SCREEN_WIDTH - CARD_WIDTH) / 2 }}
-              />
-            </View>
-          )}
+          <View style={styles.carouselContainer}>
+            <FlatList
+              ref={flatListRef}
+              data={listas}
+              horizontal
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderListaCard}
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={SNAP_INTERVAL}
+              decelerationRate="fast"
+              onMomentumScrollEnd={onScrollEnd}
+              contentContainerStyle={{ paddingHorizontal: (SCREEN_WIDTH - CARD_WIDTH) / 2 }}
+            />
+          </View>
 
           {/* 2. PAINEL DE OPERAÇÃO (Centro - Verde) */}
           <View style={styles.itemsSection}>
-            {selectedLista && !(isFocusedSearch || searchQuery.length > 0) && (
+            {selectedLista && (
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 {selectedLista.status === 'Rascunho' ? 'Conferência e Busca' : 'Itens Consolidados'}
               </Text>
@@ -413,49 +407,47 @@ export function ListasCriadas() {
                     placeholderTextColor={colors.textMuted}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
-                    onFocus={() => setIsFocusedSearch(true)}
-                    onBlur={() => setTimeout(() => setIsFocusedSearch(false), 200)}
                   />
                 </View>
                 {suggestions.length > 0 && (
-                  <View style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
-                    <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled keyboardShouldPersistTaps="always">
-                      {suggestions.map(s => (
-                        <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
-                          <View style={{ flex: 1 }}>
-                            <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
-                            <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
-                          </View>
-                          <Ionicons name="add-circle" size={24} color={colors.primary} />
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+                  <View style={styles.suggestionList}>
+                    <View style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                      <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                        {suggestions.map(s => (
+                          <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
+                              <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
+                            </View>
+                            <Ionicons name="add-circle" size={24} color={colors.primary} />
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
                   </View>
                 )}
               </View>
             )}
 
-            {!(isFocusedSearch || searchQuery.length > 0) && (
-              loadingItens ? (
-                <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 20 }}>Carregando...</Text>
-              ) : carrinho.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Ionicons name="cart-outline" size={48} color={colors.border} />
-                  <Text style={[styles.emptyText, { color: colors.textMuted }]}>Aguardando itens...</Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={carrinho}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={renderItemCarrinho}
-                  contentContainerStyle={{ paddingBottom: 150 }}
-                />
-              )
+            {loadingItens ? (
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 20 }}>Carregando...</Text>
+            ) : carrinho.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="cart-outline" size={48} color={colors.border} />
+                <Text style={[styles.emptyText, { color: colors.textMuted }]}>Aguardando itens...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={carrinho}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItemCarrinho}
+                contentContainerStyle={{ paddingBottom: 150 }}
+              />
             )}
           </View>
 
           {/* 3. BOTÃO MESTRE (Rodapé - Rosa) */}
-          {selectedLista && !(isFocusedSearch || searchQuery.length > 0) && (
+          {selectedLista && (
             <View style={[styles.masterFooter, { paddingBottom: insets.bottom + 10, backgroundColor: colors.card }]}>
               {selectedLista.status === 'Rascunho' ? (
                 <TouchableOpacity
@@ -481,10 +473,7 @@ export function ListasCriadas() {
 
       {/* 4. MODAL DE INSERÇÃO INTEGRADO */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <KeyboardAvoidingView 
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>{editandoItemId ? 'Editar Item' : 'Adicionar Item'}</Text>
@@ -528,9 +517,9 @@ export function ListasCriadas() {
               <Text style={styles.masterBtnText}>Salvar na Lista</Text>
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -575,7 +564,8 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, height: 50, paddingHorizontal: 15 },
   input: { flex: 1, fontSize: 16 },
 
-  suggestionInner: { borderRadius: 12, borderWidth: 1 },
+  suggestionList: { position: 'absolute', top: 55, left: 0, right: 0, zIndex: 200 },
+  suggestionInner: { borderRadius: 12, borderWidth: 1, maxHeight: 200, elevation: 5, overflow: 'hidden' },
   suggestionCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderBottomWidth: 1 },
   sugDesc: { fontSize: 14, fontWeight: '600' },
   sugCod: { fontSize: 12 },

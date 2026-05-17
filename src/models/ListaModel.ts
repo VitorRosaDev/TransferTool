@@ -26,7 +26,7 @@ export class ListaModel {
   /** Busca depósitos de origem normalizando a string */
   static async buscarOrigens(db: SQLiteDatabase, query: string, queryUnaccented: string): Promise<Suggestion[]> {
     return await db.getAllAsync<Suggestion>(
-      `SELECT id, codigo, nome FROM depositos_origem WHERE (nome LIKE ? OR nome_busca LIKE ? OR codigo LIKE ?) AND ativo = 1`,
+      `SELECT id, codigo, nome FROM depositos_origem WHERE (nome LIKE ? OR nome_busca LIKE ? OR codigo LIKE ?) AND ativo = 1 LIMIT 5`,
       [`%${query}%`, `%${queryUnaccented}%`, `%${query}%`]
     );
   }
@@ -34,7 +34,7 @@ export class ListaModel {
   /** Busca escolas de destino normalizando a string */
   static async buscarDestinos(db: SQLiteDatabase, query: string, queryUnaccented: string): Promise<Suggestion[]> {
     return await db.getAllAsync<Suggestion>(
-      `SELECT id, codigo_deposito, nome FROM escolas WHERE (nome LIKE ? OR nome_busca LIKE ? OR codigo_deposito LIKE ?) AND ativo = 1`,
+      `SELECT id, codigo_deposito, nome FROM escolas WHERE (nome LIKE ? OR nome_busca LIKE ? OR codigo_deposito LIKE ?) AND ativo = 1 LIMIT 5`,
       [`%${query}%`, `%${queryUnaccented}%`, `%${query}%`]
     );
   }

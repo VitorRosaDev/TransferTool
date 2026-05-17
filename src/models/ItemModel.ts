@@ -21,7 +21,7 @@ export class ItemModel {
   /** Busca itens no catálogo pelo código ou descrição */
   static async buscarCatalogo(db: SQLiteDatabase, query: string, queryUnaccented: string): Promise<ProdutoCatalogo[]> {
     return await db.getAllAsync<ProdutoCatalogo>(
-      `SELECT id, codigo, descricao, exige_validade FROM itens WHERE (descricao LIKE ? OR descricao_busca LIKE ? OR codigo LIKE ?) AND ativo = 1 LIMIT 50`,
+      `SELECT id, codigo, descricao, exige_validade FROM itens WHERE (descricao LIKE ? OR descricao_busca LIKE ? OR codigo LIKE ?) AND ativo = 1 LIMIT 5`,
       [`%${query}%`, `%${queryUnaccented}%`, `%${query}%`]
     );
   }
