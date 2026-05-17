@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel, Suggestion } from '../models/ListaModel';
@@ -10,6 +10,8 @@ export function NovaLista() {
   const db = useSQLiteContext();
   const navigation = useNavigation<any>();
   const { colors } = useTheme();
+
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Seleções de Origem e Destino
   const [origem, setOrigem] = useState<Suggestion | null>(null);
@@ -105,6 +107,13 @@ export function NovaLista() {
     setSuggestionsDestino([]);
   };
 
+  const handleFocusDestino = () => {
+    setIsFocusedDestino(true);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 150);
+  };
+
   // Confirmação final e gravação de rascunho
   const handleConfirm = async () => {
     if (!origem || !destino) return;
@@ -123,7 +132,10 @@ export function NovaLista() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {/* Cabeçalho Fixo Unificado */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -134,6 +146,7 @@ export function NovaLista() {
 
       {/* Conteúdo com Acordeon */}
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -221,7 +234,7 @@ export function NovaLista() {
                     placeholderTextColor={colors.textMuted}
                     value={searchQueryDestino}
                     onChangeText={setSearchQueryDestino}
-                    onFocus={() => setIsFocusedDestino(true)}
+                    onFocus={handleFocusDestino}
                     onBlur={() => setTimeout(() => setIsFocusedDestino(false), 200)}
                   />
                   {searchQueryDestino.length > 0 && (
@@ -281,7 +294,7 @@ export function NovaLista() {
           <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
