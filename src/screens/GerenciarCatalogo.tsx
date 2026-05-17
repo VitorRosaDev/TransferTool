@@ -24,8 +24,7 @@ export function GerenciarCatalogo() {
   const renderStep1 = () => (
     <View style={styles.content}>
       <Text style={[styles.title, { color: colors.text }]}>O que deseja fazer?</Text>
-      <Text style={[styles.subtitle, { color: colors.textMuted }]}>Escolha a ação principal para o catálogo</Text>
-
+      
       <TouchableOpacity 
         style={[styles.menuButton, { backgroundColor: colors.card }]}
         onPress={() => { setAction('adicionar'); setStep(2); }}
@@ -317,7 +316,7 @@ export function GerenciarCatalogo() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingTop: 40 },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 32 },
   subtitle: { fontSize: 16, marginBottom: 32 },
   stepTitle: { fontSize: 20, fontWeight: 'bold', marginLeft: 16 },
   headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },

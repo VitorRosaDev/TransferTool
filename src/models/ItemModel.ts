@@ -37,24 +37,39 @@ export class ItemModel {
     `, [listaId]);
   }
 
-  /** Insere um novo item no carrinho */
+  /** Insere um novo item no carrinho, garantindo que a lista esteja em Rascunho */
   static async adicionar(db: SQLiteDatabase, listaId: number, produtoId: number, qtd: number, validade?: string | null): Promise<void> {
+    const lista = await db.getFirstAsync<{ status: string }>(`SELECT status FROM listas WHERE id = ?`, [listaId]);
+    if (lista?.status !== 'Rascunho') throw new Error("Apenas listas em Rascunho podem receber novos itens.");
+
     await db.runAsync(
       `INSERT INTO itens_lista (lista_id, produto_id, quantidade, data_validade) VALUES (?, ?, ?, ?)`,
       [listaId, produtoId, qtd, validade || null]
     );
   }
 
-  /** Atualiza quantidade ou validade de um item já inserido no carrinho */
+  /** Atualiza quantidade ou validade, validando o estado da lista pai */
   static async atualizar(db: SQLiteDatabase, idItemLista: number, qtd: number, validade?: string | null): Promise<void> {
+    const item = await db.getFirstAsync<{ lista_id: number }>(`SELECT lista_id FROM itens_lista WHERE id = ?`, [idItemLista]);
+    if (!item) return;
+
+    const lista = await db.getFirstAsync<{ status: string }>(`SELECT status FROM listas WHERE id = ?`, [item.lista_id]);
+    if (lista?.status !== 'Rascunho') throw new Error("Não é possível editar itens de uma lista consolidada.");
+
     await db.runAsync(
       `UPDATE itens_lista SET quantidade = ?, data_validade = ? WHERE id = ?`,
       [qtd, validade || null, idItemLista]
     );
   }
 
-  /** Remove um item específico do carrinho */
+  /** Remove um item, validando o estado da lista pai */
   static async remover(db: SQLiteDatabase, idItemLista: number): Promise<void> {
+    const item = await db.getFirstAsync<{ lista_id: number }>(`SELECT lista_id FROM itens_lista WHERE id = ?`, [idItemLista]);
+    if (!item) return;
+
+    const lista = await db.getFirstAsync<{ status: string }>(`SELECT status FROM listas WHERE id = ?`, [item.lista_id]);
+    if (lista?.status !== 'Rascunho') throw new Error("Não é possível remover itens de uma lista consolidada.");
+
     await db.runAsync(`DELETE FROM itens_lista WHERE id = ?`, [idItemLista]);
   }
 }
