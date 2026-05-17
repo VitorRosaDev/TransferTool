@@ -419,15 +419,17 @@ export function ListasCriadas() {
                 </View>
                 {suggestions.length > 0 && (
                   <View style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
-                    {suggestions.map(s => (
-                      <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
-                          <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
-                        </View>
-                        <Ionicons name="add-circle" size={24} color={colors.primary} />
-                      </TouchableOpacity>
-                    ))}
+                    <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled keyboardShouldPersistTaps="always">
+                      {suggestions.map(s => (
+                        <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
+                            <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
+                          </View>
+                          <Ionicons name="add-circle" size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
                 )}
               </View>
