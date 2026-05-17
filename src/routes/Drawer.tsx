@@ -4,7 +4,6 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { Home } from '../screens/Home';
 import { NovaLista } from '../screens/NovaLista';
 import { GerenciarCatalogo } from '../screens/GerenciarCatalogo';
-import { ScannerLista } from '../screens/ScannerLista';
 import { ListasCriadas } from '../screens/ListasCriadas';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -83,15 +82,6 @@ export function DrawerRoutes() {
           title: 'Gestão de Catálogos',
           drawerIcon: ({ color }) => <Ionicons name="settings-outline" size={22} color={color} />
         }}
-      />
-      <Drawer.Screen 
-        name="ScannerLista" 
-        component={ScannerLista} 
-        options={{ 
-          title: 'Adicionar Itens', 
-          headerShown: false,
-          drawerItemStyle: { display: 'none' } // Oculta do menu lateral
-        }} 
       />
     </Drawer.Navigator>
   );
