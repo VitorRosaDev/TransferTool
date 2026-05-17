@@ -181,23 +181,21 @@ export function NovaLista() {
                 )}
               </View>
 
-              {/* Preview Rolável de Sugestões de Origem */}
+              {/* Preview de Sugestões de Origem */}
               {(isFocusedOrigem || searchQueryOrigem.length > 0) && suggestionsOrigem.length > 0 && (
                 <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-                    {suggestionsOrigem.map(s => (
-                      <TouchableOpacity 
-                        key={s.id} 
-                        style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
-                        onPress={() => handleSelectOrigem(s)}
-                      >
-                        <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
-                        <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
-                          Código: {s.codigo}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                  {suggestionsOrigem.map(s => (
+                    <TouchableOpacity 
+                      key={s.id} 
+                      style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
+                      onPress={() => handleSelectOrigem(s)}
+                    >
+                      <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
+                      <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
+                        Código: {s.codigo}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
             </View>
@@ -244,23 +242,21 @@ export function NovaLista() {
                   )}
                 </View>
 
-                {/* Preview Rolável de Sugestões de Destino */}
+                {/* Preview de Sugestões de Destino */}
                 {(isFocusedDestino || searchQueryDestino.length > 0) && suggestionsDestino.length > 0 && (
                   <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-                      {suggestionsDestino.map(s => (
-                        <TouchableOpacity 
-                          key={s.id} 
-                          style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
-                          onPress={() => handleSelectDestino(s)}
-                        >
-                          <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
-                          <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
-                            Código: {s.codigo_deposito}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+                    {suggestionsDestino.map(s => (
+                      <TouchableOpacity 
+                        key={s.id} 
+                        style={[styles.suggestionItem, { borderBottomColor: colors.border }]} 
+                        onPress={() => handleSelectDestino(s)}
+                      >
+                        <Text style={[styles.suggestionText, { color: colors.text }]}>{s.nome}</Text>
+                        <Text style={[styles.suggestionCode, { color: colors.textMuted }]}>
+                          Código: {s.codigo_deposito}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
                 )}
               </View>
