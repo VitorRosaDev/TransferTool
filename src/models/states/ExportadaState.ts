@@ -36,11 +36,11 @@ export class ExportadaState implements IRanchoState {
 
   gerarPayload(): PayloadRPA {
     return {
-      id_app: this.contexto.data.id || 0,
+      id_app: this.contexto.getData().id || 0,
       data_geracao: new Date().toISOString(),
-      codigo_origem: this.contexto.data.codigo_origem,
-      codigo_destino: this.contexto.data.codigo_destino,
-      itens: this.contexto.data.itens.map(item => ({
+      codigo_origem: this.contexto.getData().codigo_origem,
+      codigo_destino: this.contexto.getData().codigo_destino,
+      itens: this.contexto.getData().itens.map(item => ({
         codigo: item.codigo_item,
         quantidade: item.quantidade
       }))

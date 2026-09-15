@@ -6,7 +6,7 @@ import { ExportadaState } from './states/ExportadaState';
 
 export class ListaRancho {
   private state: IRanchoState;
-  public data: IListaRanchoData;
+  private data: IListaRanchoData;
 
   constructor(initialData?: IListaRanchoData) {
     if (initialData) {

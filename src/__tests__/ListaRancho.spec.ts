@@ -8,14 +8,14 @@ describe('Padrão State: ListaRancho', () => {
   it('deve iniciar no estado Rascunho', () => {
     const lista = new ListaRancho();
     expect(lista.getState()).toBeInstanceOf(RascunhoState);
-    expect(lista.data.status).toBe('Rascunho');
+    expect(lista.getData().status).toBe('Rascunho');
   });
 
   it('deve permitir adicionar item no estado Rascunho', () => {
     const lista = new ListaRancho();
     lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
-    expect(lista.data.itens.length).toBe(1);
-    expect(lista.data.itens[0].quantidade).toBe(10);
+    expect(lista.getData().itens.length).toBe(1);
+    expect(lista.getData().itens[0].quantidade).toBe(10);
   });
 
   it('deve rejeitar quantidade não finita ao adicionar item', () => {
@@ -48,12 +48,20 @@ describe('Padrão State: ListaRancho', () => {
     
     lista.consolidar();
     expect(lista.getState()).toBeInstanceOf(ConsolidadaState);
-    expect(lista.data.status).toBe('Consolidada');
+    expect(lista.getData().status).toBe('Consolidada');
   });
 
   it('deve bloquear alteração de itens no estado Consolidada', () => {
-    const lista = new ListaRancho();
-    lista.setState(new ConsolidadaState(lista));
+    const lista = new ListaRancho({
+      id: 1,
+      origem_id: 1,
+      codigo_origem: 'DEP-01',
+      escola_id: 1,
+      codigo_destino: 'ESC-01',
+      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      status: 'Consolidada',
+      data_criacao: new Date().toISOString(),
+    });
 
     expect(() => {
       lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
@@ -61,28 +69,44 @@ describe('Padrão State: ListaRancho', () => {
   });
 
   it('deve permitir reabrir a lista Consolidada', () => {
-    const lista = new ListaRancho();
-    lista.setState(new ConsolidadaState(lista));
+    const lista = new ListaRancho({
+      id: 1,
+      origem_id: 1,
+      codigo_origem: 'DEP-01',
+      escola_id: 1,
+      codigo_destino: 'ESC-01',
+      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      status: 'Consolidada',
+      data_criacao: new Date().toISOString(),
+    });
     
     lista.reabrir();
     expect(lista.getState()).toBeInstanceOf(RascunhoState);
   });
 
   it('deve permitir reabrir a lista Exportada', () => {
-    const lista = new ListaRancho();
-    lista.setState(new ExportadaState(lista));
+    const lista = new ListaRancho({
+      id: 1,
+      origem_id: 1,
+      codigo_origem: 'DEP-01',
+      escola_id: 1,
+      codigo_destino: 'ESC-01',
+      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      status: 'Exportada',
+      data_criacao: new Date().toISOString(),
+    });
 
     lista.reabrir();
 
     expect(lista.getState()).toBeInstanceOf(RascunhoState);
-    expect(lista.data.status).toBe('Rascunho');
+    expect(lista.getData().status).toBe('Rascunho');
   });
 
   it('deve gerar o Payload RPA exato ao Exportar e transitar para estado final', () => {
     const lista = new ListaRancho();
     lista.definirOrigemDestino(1, 'DEP-01', 2, 'ESC-01');
-    lista.data.itens.push({ codigo_item: 'ALIM-001', quantidade: 10 });
-    lista.setState(new ConsolidadaState(lista));
+    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+    lista.consolidar();
 
     const payload = lista.exportar();
     

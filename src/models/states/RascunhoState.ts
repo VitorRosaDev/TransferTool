@@ -15,16 +15,16 @@ export class RascunhoState implements IRanchoState {
       throw new ValidacaoItemError("A quantidade do item deve ser maior que zero.");
     }
     
-    const index = this.contexto.data.itens.findIndex(i => i.codigo_item === item.codigo_item);
+    const index = this.contexto.getData().itens.findIndex(i => i.codigo_item === item.codigo_item);
     if (index >= 0) {
-      this.contexto.data.itens[index].quantidade += item.quantidade;
+      this.contexto.getData().itens[index].quantidade += item.quantidade;
     } else {
-      this.contexto.data.itens.push(item);
+      this.contexto.getData().itens.push(item);
     }
   }
 
   removerItem(codigoItem: string): void {
-    this.contexto.data.itens = this.contexto.data.itens.filter(i => i.codigo_item !== codigoItem);
+    this.contexto.getData().itens = this.contexto.getData().itens.filter(i => i.codigo_item !== codigoItem);
   }
 
   alterarQuantidade(codigoItem: string, quantidade: number): void {
@@ -35,7 +35,7 @@ export class RascunhoState implements IRanchoState {
       this.removerItem(codigoItem);
       return;
     }
-    const item = this.contexto.data.itens.find(i => i.codigo_item === codigoItem);
+    const item = this.contexto.getData().itens.find(i => i.codigo_item === codigoItem);
     if (item) {
       item.quantidade = quantidade;
     } else {
@@ -44,17 +44,17 @@ export class RascunhoState implements IRanchoState {
   }
 
   definirOrigemDestino(origemId: number, codigoOrigem: string, escolaId: number, codigoDestino: string): void {
-    this.contexto.data.origem_id = origemId;
-    this.contexto.data.codigo_origem = codigoOrigem;
-    this.contexto.data.escola_id = escolaId;
-    this.contexto.data.codigo_destino = codigoDestino;
+    this.contexto.getData().origem_id = origemId;
+    this.contexto.getData().codigo_origem = codigoOrigem;
+    this.contexto.getData().escola_id = escolaId;
+    this.contexto.getData().codigo_destino = codigoDestino;
   }
 
   consolidar(): void {
-    if (!this.contexto.data.codigo_origem || !this.contexto.data.codigo_destino) {
+    if (!this.contexto.getData().codigo_origem || !this.contexto.getData().codigo_destino) {
       throw new ValidacaoItemError("Origem e Destino devem estar preenchidos para consolidar.");
     }
-    if (this.contexto.data.itens.length === 0) {
+    if (this.contexto.getData().itens.length === 0) {
       throw new ValidacaoItemError("A lista deve ter pelo menos um item para ser consolidada.");
     }
 
@@ -62,7 +62,7 @@ export class RascunhoState implements IRanchoState {
   }
 
   reabrir(): void {
-    return; 
+    throw new TransicaoInvalidaError('Rascunho', 'Rascunho');
   }
 
   gerarPayload(): PayloadRPA {

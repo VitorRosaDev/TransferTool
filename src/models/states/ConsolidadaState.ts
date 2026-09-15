@@ -36,16 +36,16 @@ export class ConsolidadaState implements IRanchoState {
   }
 
   gerarPayload(): PayloadRPA {
-    if (this.contexto.data.itens.length === 0) {
+    if (this.contexto.getData().itens.length === 0) {
       throw new OperacaoBloqueadaError('exportar', 'Consolidada (Lista Vazia)');
     }
 
     const payload: PayloadRPA = {
-      id_app: this.contexto.data.id || Math.floor(Math.random() * 10000),
+      id_app: this.contexto.getData().id || Math.floor(Math.random() * 10000),
       data_geracao: new Date().toISOString(),
-      codigo_origem: this.contexto.data.codigo_origem,
-      codigo_destino: this.contexto.data.codigo_destino,
-      itens: this.contexto.data.itens.map(item => ({
+      codigo_origem: this.contexto.getData().codigo_origem,
+      codigo_destino: this.contexto.getData().codigo_destino,
+      itens: this.contexto.getData().itens.map(item => ({
         codigo: item.codigo_item,
         quantidade: item.quantidade
       }))
@@ -56,7 +56,7 @@ export class ConsolidadaState implements IRanchoState {
 
   exportar(): PayloadRPA {
     const payload = this.gerarPayload();
-    this.contexto.setState(new ExportadaState(this.contexto));
+    this.contexto.transicionarParaExportada();
     return payload;
   }
 }

@@ -48,10 +48,10 @@ export class ListaRanchoService {
 
       const result = await txn.runAsync(
         'INSERT INTO listas (origem_id, escola_id, data_criacao, status) VALUES (?, ?, ?, ?)',
-        [lista.data.origem_id, lista.data.escola_id, lista.data.data_criacao, lista.data.status]
+        [lista.getData().origem_id, lista.getData().escola_id, lista.getData().data_criacao, lista.getData().status]
       );
       listaId = result.lastInsertRowId;
-      await this.registrarTransicao(txn, listaId, 'Nenhum', lista.data.status, 'Criação inicial da lista');
+      await this.registrarTransicao(txn, listaId, 'Nenhum', lista.getData().status, 'Criação inicial da lista');
     });
 
     return listaId;
@@ -92,7 +92,7 @@ export class ListaRanchoService {
   static async consolidar(db: SQLiteDatabase, listaId: number): Promise<void> {
     await db.withExclusiveTransactionAsync(async (txn) => {
       const lista = await this.reidratar(txn, listaId);
-      const estadoAnterior = lista.data.status;
+      const estadoAnterior = lista.getData().status;
       lista.consolidar();
       await this.persistirTransicao(txn, lista, estadoAnterior, 'Carga finalizada fisicamente no coletor');
     });
@@ -101,7 +101,7 @@ export class ListaRanchoService {
   static async reabrir(db: SQLiteDatabase, listaId: number): Promise<void> {
     await db.withExclusiveTransactionAsync(async (txn) => {
       const lista = await this.reidratar(txn, listaId);
-      const estadoAnterior = lista.data.status;
+      const estadoAnterior = lista.getData().status;
       lista.reabrir();
       await this.persistirTransicao(txn, lista, estadoAnterior, 'Lista reaberta para correção da conferência');
     });
@@ -130,7 +130,7 @@ export class ListaRanchoService {
       for (const listaPersistida of listas) {
         if (listaPersistida.status !== 'Consolidada') continue;
         const lista = await this.reidratar(txn, listaPersistida.id);
-        const estadoAnterior = lista.data.status;
+        const estadoAnterior = lista.getData().status;
         lista.exportar();
         await this.persistirTransicao(txn, lista, estadoAnterior, 'Arquivo JSON global gerado e compartilhado');
       }
@@ -147,7 +147,7 @@ export class ListaRanchoService {
 
     await db.withExclusiveTransactionAsync(async (txn) => {
       const lista = await this.reidratar(txn, listaId);
-      const estadoAnterior = lista.data.status;
+      const estadoAnterior = lista.getData().status;
       lista.exportar();
       await this.persistirTransicao(txn, lista, estadoAnterior, 'Arquivo JSON gerado e compartilhado');
     });
@@ -195,11 +195,11 @@ export class ListaRanchoService {
   }
 
   private static async persistirItens(db: SQLiteDatabase, lista: ListaRancho): Promise<void> {
-    const listaId = lista.data.id;
+    const listaId = lista.getData().id;
     if (!listaId) throw new Error('Não é possível persistir uma lista sem identificador.');
 
     await db.runAsync('DELETE FROM itens_lista WHERE lista_id = ?', [listaId]);
-    for (const item of lista.data.itens) {
+    for (const item of lista.getData().itens) {
       const produto = await db.getFirstAsync<{ id: number }>('SELECT id FROM itens WHERE codigo = ?', [item.codigo_item]);
       if (!produto) throw new Error(`Produto ${item.codigo_item} não encontrado.`);
       await db.runAsync(
@@ -215,11 +215,11 @@ export class ListaRanchoService {
     estadoAnterior: StatusLista,
     motivo: string
   ): Promise<void> {
-    const listaId = lista.data.id;
+    const listaId = lista.getData().id;
     if (!listaId) throw new Error('Não é possível persistir uma lista sem identificador.');
 
-    await db.runAsync('UPDATE listas SET status = ? WHERE id = ?', [lista.data.status, listaId]);
-    await this.registrarTransicao(db, listaId, estadoAnterior, lista.data.status, motivo);
+    await db.runAsync('UPDATE listas SET status = ? WHERE id = ?', [lista.getData().status, listaId]);
+    await this.registrarTransicao(db, listaId, estadoAnterior, lista.getData().status, motivo);
   }
 
   private static async registrarTransicao(
