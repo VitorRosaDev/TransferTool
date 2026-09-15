@@ -10,7 +10,10 @@ export class ListaRancho {
 
   constructor(initialData?: IListaRanchoData) {
     if (initialData) {
-      this.data = { ...initialData };
+      this.data = {
+        ...initialData,
+        itens: initialData.itens.map(item => ({ ...item })),
+      };
       this.state = this.restoreState(initialData.status);
     } else {
       this.data = {
@@ -58,7 +61,11 @@ export class ListaRancho {
     return this.state.exportar();
   }
 
-  public setState(newState: IRanchoState): void {
+  public getData(): IListaRanchoData {
+    return this.data;
+  }
+  
+  private setState(newState: IRanchoState): void {
     this.state = newState;
     this.data.status = newState.getNomeEstado();
   }
@@ -75,12 +82,16 @@ export class ListaRancho {
     this.setState(new RascunhoState(this));
   }
 
+  public transicionarParaExportada(): void {
+    this.setState(new ExportadaState(this));
+  }
+
   private restoreState(statusString: string): IRanchoState {
     switch (statusString) {
       case 'Rascunho': return new RascunhoState(this);
       case 'Consolidada': return new ConsolidadaState(this);
       case 'Exportada': return new ExportadaState(this);
-      default: return new RascunhoState(this);
+      default: throw new ValidacaoItemError(`Status de lista inválido: ${statusString}.`);
     }
   }
 }
