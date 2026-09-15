@@ -4,15 +4,33 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { ListaModel, ListaHist } from '../models/ListaModel';
-import { ItemModel, ItemCarrinho } from '../models/ItemModel';
+import { ListaModel } from '../models/ListaModel';
+import type { ListaHist } from '../models/ListaModel';
+import { ItemModel } from '../models/ItemModel';
+import type { ItemCarrinho } from '../models/ItemModel';
 import { useTheme } from '../contexts/ThemeContext';
-import { ExportacaoModel } from '../models/ExportacaoModel';
+import { ListaRanchoService } from '../models/ListaRanchoService';
+import { AppHeader } from '../components/AppHeader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
 const CARD_MARGIN = 10;
 const SNAP_INTERVAL = CARD_WIDTH + (CARD_MARGIN * 2);
+
+const ordenarListas = (listas: ListaHist[]): ListaHist[] => {
+  const possuiExportada = listas.some(lista => lista.status === 'Exportada');
+  const prioridade: Record<string, number> = possuiExportada
+    ? { Exportada: 0, Consolidada: 1, Rascunho: 2 }
+    : { Consolidada: 0, Rascunho: 1 };
+
+  return [...listas].sort((a, b) => {
+    const diferencaStatus = (prioridade[a.status] ?? 3) - (prioridade[b.status] ?? 3);
+    if (diferencaStatus !== 0) return diferencaStatus;
+
+    const diferencaData = new Date(a.data_criacao).getTime() - new Date(b.data_criacao).getTime();
+    return diferencaData !== 0 ? diferencaData : a.id - b.id;
+  });
+};
 
 // Utilitário para Data Amigável
 const formatFriendlyDate = (isoString: string) => {
@@ -24,25 +42,6 @@ const formatFriendlyDate = (isoString: string) => {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${day}/${month}/${year} às ${hours}:${minutes}`;
-};
-
-// Validar se data (DD/MM/YYYY) já passou
-const isDateExpired = (dateStr: string) => {
-  if (dateStr.length !== 10) return false;
-  const [day, month, year] = dateStr.split('/');
-  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return dateObj < today;
-};
-
-// Máscara de data
-const formatDate = (text: string) => {
-  const cleaned = text.replace(/\D/g, '');
-  let formatted = cleaned;
-  if (cleaned.length > 2) formatted = cleaned.replace(/^(\d{2})(\d)/, '$1/$2');
-  if (cleaned.length > 4) formatted = formatted.replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
-  return formatted.substring(0, 10);
 };
 
 export function ListasCriadas() {
@@ -64,18 +63,13 @@ export function ListasCriadas() {
   const [itemAtivo, setItemAtivo] = useState<any | null>(null);
   const [editandoItemId, setEditandoItemId] = useState<number | null>(null);
   const [quantidade, setQuantidade] = useState('');
-  const [validade, setValidade] = useState('');
 
   const flatListRef = useRef<FlatList>(null);
 
   const loadListas = useCallback(async () => {
     try {
       const result = await ListaModel.getHistorico(db);
-      setListas(result);
-      if (result.length === 0) {
-        setSelectedListaId(null);
-        setCarrinho([]);
-      }
+      setListas(ordenarListas(result));
     } catch (error) {
       console.error("Erro ao carregar histórico de listas:", error);
     }
@@ -100,7 +94,7 @@ export function ListasCriadas() {
   useEffect(() => {
     if (listas.length > 0) {
       const paramId = route.params?.listaId;
-      if (paramId) {
+      if (paramId && listas.some(lista => lista.id === paramId)) {
         setSelectedListaId(paramId);
         const index = listas.findIndex(l => l.id === paramId);
         if (index !== -1) {
@@ -111,13 +105,15 @@ export function ListasCriadas() {
             });
           }, 100);
         }
-      } else if (selectedListaId === null) {
+      } else if (selectedListaId !== null && listas.some(lista => lista.id === selectedListaId)) {
+        return;
+      } else {
         setSelectedListaId(listas[0].id);
       }
     } else {
       setSelectedListaId(null);
     }
-  }, [listas, route.params?.listaId]);
+  }, [listas, route.params?.listaId, selectedListaId]);
 
   // Busca dinâmica de itens (Scanner Logic)
   useEffect(() => {
@@ -158,22 +154,20 @@ export function ListasCriadas() {
     }
   };
 
-  const handleExportar = async (id: number) => {
+  const handleExportarTodas = async () => {
     try {
-      const payload = await ExportacaoModel.gerarPayload(db, id);
-      await ExportacaoModel.exportarArquivo(payload);
-      await ExportacaoModel.marcarComoExportada(db, id);
+      await ListaRanchoService.exportarTodas(db);
       loadListas();
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Falha ao gerar arquivo de exportação.");
+      Alert.alert("Erro", error instanceof Error ? error.message : "Falha ao gerar arquivo de exportação.");
     }
   };
 
   const handleDeletarLista = async (id: number) => {
     const deleteAction = async () => {
       try {
-        await ListaModel.deletar(db, id);
+        await ListaRanchoService.deletar(db, id);
         loadListas();
       } catch (error) {
         console.error("Erro ao deletar lista:", error);
@@ -198,7 +192,7 @@ export function ListasCriadas() {
   const handleConsolidar = async (id: number) => {
     const consolidarAction = async () => {
       try {
-        await ListaModel.consolidar(db, id);
+        await ListaRanchoService.consolidar(db, id);
         loadListas();
       } catch (error) {
         console.error(error);
@@ -211,13 +205,30 @@ export function ListasCriadas() {
     ]);
   };
 
+  const handleReabrir = async (id: number) => {
+    const reabrirAction = async () => {
+      try {
+        await ListaRanchoService.reabrir(db, id);
+        loadListas();
+      } catch (error) {
+        console.error(error);
+        Alert.alert("Erro", "Não foi possível reabrir esta lista.");
+      }
+    };
+
+    Alert.alert("Reabrir Lista", "Deseja reabrir esta carga para corrigir ou incluir itens?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Reabrir", style: "default", onPress: reabrirAction }
+    ]);
+  };
+
   const handleRemoverItem = async (idItemLista: number) => {
     Alert.alert("Remover Item", "Deseja remover este item da lista?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Remover", style: "destructive", onPress: async () => {
           try {
-            await ItemModel.remover(db, idItemLista);
+            await ListaRanchoService.removerItem(db, idItemLista);
             if (selectedListaId) loadItens(selectedListaId);
           } catch (error) {
             console.error("Erro ao remover item", error);
@@ -231,7 +242,6 @@ export function ListasCriadas() {
     setItemAtivo(item);
     setEditandoItemId(null);
     setQuantidade('');
-    setValidade('');
     setSearchQuery('');
     setSuggestions([]);
     setModalVisible(true);
@@ -241,27 +251,21 @@ export function ListasCriadas() {
     setItemAtivo({
       id: item.produto_id,
       codigo: item.codigo,
-      descricao: item.descricao,
-      exige_validade: item.exige_validade
+      descricao: item.descricao
     });
     setEditandoItemId(item.id);
     setQuantidade(item.quantidade.toString());
-    setValidade(item.data_validade || '');
     setModalVisible(true);
   };
 
   const handleSalvarItem = async () => {
     if (!itemAtivo || !quantidade || !selectedListaId) return;
-    if (itemAtivo.exige_validade === 1 && validade.length !== 10) {
-      Alert.alert("Atenção", "Preencha a validade corretamente.");
-      return;
-    }
     try {
       const qtdNum = parseFloat(quantidade);
       if (editandoItemId) {
-        await ItemModel.atualizar(db, editandoItemId, qtdNum, validade || null);
+        await ListaRanchoService.alterarQuantidade(db, editandoItemId, qtdNum);
       } else {
-        await ItemModel.adicionar(db, selectedListaId, itemAtivo.id, qtdNum, validade || null);
+        await ListaRanchoService.adicionarItem(db, selectedListaId, itemAtivo.id, qtdNum);
       }
       setModalVisible(false);
       loadItens(selectedListaId);
@@ -283,9 +287,6 @@ export function ListasCriadas() {
         <View style={{ flex: 1 }}>
           <Text style={[styles.itemTitle, { color: colors.text }]}>{item.descricao}</Text>
           <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Código: {item.codigo}</Text>
-          {item.data_validade && (
-            <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Validade: <Text style={{ fontWeight: 'bold' }}>{item.data_validade}</Text></Text>
-          )}
         </View>
         <View style={[styles.qtdContainer, { backgroundColor: colors.background }]}>
           <Text style={[styles.qtdText, { color: colors.primary }]}>{item.quantidade}</Text>
@@ -299,7 +300,7 @@ export function ListasCriadas() {
     );
   };
 
-  const renderListaCard = ({ item }: { item: ListaHist }) => {
+  const renderListaCard = ({ item, index }: { item: ListaHist; index: number }) => {
     const isConsolidada = item.status === 'Consolidada';
     const isExportada = item.status === 'Exportada';
     const isSelected = item.id === selectedListaId;
@@ -313,7 +314,7 @@ export function ListasCriadas() {
         ]}
       >
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>Lista #{item.id}</Text>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Lista #{index + 1}</Text>
           <View style={[
             styles.badge,
             isConsolidada ? styles.badgeConsolidada :
@@ -347,12 +348,16 @@ export function ListasCriadas() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.headerBg, paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.openDrawer()}>
-          <Ionicons name="menu" size={28} color="#FFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Hub de Transferência</Text>
-      </View>
+      <AppHeader
+        title="Hub de Transferência"
+        navigationMode="menu"
+        onPress={() => navigation.openDrawer()}
+        action={{
+          accessibilityLabel: 'Exportar todas as cargas',
+          icon: 'share-social-outline',
+          onPress: handleExportarTodas,
+        }}
+      />
 
       {/* ESTADO VAZIO GLOBAL */}
       {listas.length === 0 ? (
@@ -459,11 +464,11 @@ export function ListasCriadas() {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  style={[styles.masterBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => handleExportar(selectedLista.id)}
+                  style={[styles.masterBtn, { backgroundColor: colors.danger }]}
+                  onPress={() => handleReabrir(selectedLista.id)}
                 >
-                  <Text style={styles.masterBtnText}>Gerar JSON</Text>
-                  <Ionicons name="share-social-outline" size={24} color="#FFF" />
+                  <Text style={styles.masterBtnText}>Reabrir Lista</Text>
+                  <Ionicons name="create-outline" size={24} color="#FFF" />
                 </TouchableOpacity>
               )}
             </View>
@@ -494,22 +499,6 @@ export function ListasCriadas() {
                 autoFocus
               />
             </View>
-            {itemAtivo?.exige_validade === 1 && (
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.text }]}>Data de Validade (DD/MM/AAAA) *</Text>
-                <TextInput
-                  style={[styles.modalInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
-                  keyboardType="numeric"
-                  placeholder="DD/MM/AAAA"
-                  maxLength={10}
-                  value={validade}
-                  onChangeText={(t) => setValidade(formatDate(t))}
-                />
-                {validade.length === 10 && isDateExpired(validade) && (
-                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>Atenção: Produto Vencido!</Text>
-                )}
-              </View>
-            )}
             <TouchableOpacity
               style={[styles.masterBtn, { backgroundColor: colors.primary, marginTop: 20 }]}
               onPress={handleSalvarItem}
@@ -525,10 +514,6 @@ export function ListasCriadas() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 20, flexDirection: 'row', alignItems: 'center' },
-  menuBtn: { marginRight: 16 },
-  headerTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
-
   // 1. CARROSSEL
   carouselContainer: { paddingVertical: 10, height: 165 },
   card: {

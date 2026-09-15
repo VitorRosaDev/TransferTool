@@ -1,11 +1,11 @@
 export interface ItemRancho {
   id?: number;
   codigo_item: string;
-  descricao?: string; // Usado apenas na UI, nunca exportado
+  descricao?: string;
   quantidade: number;
-  data_validade?: string; // Opcional depedendo do item
-  exige_validade: boolean;
 }
+
+export type StatusLista = 'Rascunho' | 'Consolidada' | 'Exportada';
 
 export interface IListaRanchoData {
   id?: number;
@@ -14,19 +14,17 @@ export interface IListaRanchoData {
   escola_id: number;
   codigo_destino: string;
   itens: ItemRancho[];
-  status: 'Rascunho' | 'Consolidada' | 'Exportada';
+  status: StatusLista;
   data_criacao: string;
 }
 
-// Representação estrita do Payload para o RPA
 export interface PayloadRPA {
-  id_transferencia_app: number;
+  id_app: number;
   data_geracao: string;
   codigo_origem: string;
   codigo_destino: string;
   itens: Array<{
-    codigo_item: string;
+    codigo: string;
     quantidade: number;
-    validade: string | null;
   }>;
 }

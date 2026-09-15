@@ -1,8 +1,7 @@
 import { IRanchoState } from './IRanchoState';
-import { ItemRancho, PayloadRPA } from '../interfaces';
-import { ListaRancho } from '../ListaRancho';
+import type { ItemRancho, PayloadRPA } from '../interfaces';
+import type { ListaRancho } from '../ListaRancho';
 import { OperacaoBloqueadaError, TransicaoInvalidaError } from '../errors';
-import { RascunhoState } from './RascunhoState';
 import { ExportadaState } from './ExportadaState';
 
 export class ConsolidadaState implements IRanchoState {
@@ -33,31 +32,31 @@ export class ConsolidadaState implements IRanchoState {
   }
 
   reabrir(): void {
-    // Permite reabrir para Rascunho caso o operador tenha errado antes da separação física
-    this.contexto.setState(new RascunhoState(this.contexto));
+    this.contexto.transicionarParaRascunho();
   }
 
-  exportar(): PayloadRPA {
-    // Validação extra por segurança, embora o Rascunho já devesse ter garantido
+  gerarPayload(): PayloadRPA {
     if (this.contexto.data.itens.length === 0) {
       throw new OperacaoBloqueadaError('exportar', 'Consolidada (Lista Vazia)');
     }
 
     const payload: PayloadRPA = {
-      id_transferencia_app: this.contexto.data.id || Math.floor(Math.random() * 10000), // Simulação de ID local
+      id_app: this.contexto.data.id || Math.floor(Math.random() * 10000),
       data_geracao: new Date().toISOString(),
       codigo_origem: this.contexto.data.codigo_origem,
       codigo_destino: this.contexto.data.codigo_destino,
       itens: this.contexto.data.itens.map(item => ({
-        codigo_item: item.codigo_item,
-        quantidade: item.quantidade,
-        validade: item.exige_validade && item.data_validade ? item.data_validade : null
+        codigo: item.codigo_item,
+        quantidade: item.quantidade
       }))
     };
 
-    // Transita para o estado final
+    return payload;
+  }
+
+  exportar(): PayloadRPA {
+    const payload = this.gerarPayload();
     this.contexto.setState(new ExportadaState(this.contexto));
-    
     return payload;
   }
 }

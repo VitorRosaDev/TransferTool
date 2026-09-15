@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { useTheme } from '../contexts/ThemeContext';
 
 export function Home() {
@@ -14,7 +14,7 @@ export function Home() {
       <View style={styles.headerArea}>
         <Ionicons name="cube-outline" size={80} color={colors.primary} />
         <Text style={[styles.title, { color: colors.text }]}>TransferTool</Text>
-        <Text style={[styles.subtitle, { color: colors.textMuted }]}>Gestão de Cargas Offline</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>Gestão de Cargas</Text>
       </View>
 
       <View style={styles.actionArea}>
@@ -26,7 +26,7 @@ export function Home() {
           <Ionicons name="add-circle-outline" size={28} color="#FFF" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>Montar Nova Carga</Text>
         </TouchableOpacity>
-        <Text style={[styles.helperText, { color: colors.textMuted }]}>Toque acima para iniciar um novo rancho</Text>
+        <Text style={[styles.helperText, { color: colors.textMuted }]}>Toque acima para iniciar uma nova carga</Text>
       </View>
     </View>
   );

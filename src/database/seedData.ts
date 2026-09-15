@@ -280,371 +280,297 @@ export const SEED_ITENS = [
   {
     "codigo": "2201",
     "descricao": "ARROZ PARBOILIZADO",
-    "exige_validade": 1
   },
   {
     "codigo": "2203",
     "descricao": "BISCOITO CREAM CRACKER",
-    "exige_validade": 1
   },
   {
     "codigo": "2214",
     "descricao": "FARINHA DE MANDIOCA",
-    "exige_validade": 1
   },
   {
     "codigo": "2215",
     "descricao": "FARINHA DE MILHO",
-    "exige_validade": 1
   },
   {
     "codigo": "2216",
     "descricao": "FARINHA DE TRIGO",
-    "exige_validade": 1
   },
   {
     "codigo": "2217",
     "descricao": "FEIJÃO CARIOCA",
-    "exige_validade": 1
   },
   {
     "codigo": "2218",
     "descricao": "FEIJÃO PRETO",
-    "exige_validade": 1
   },
   {
     "codigo": "2223",
     "descricao": "MACARRÃO - CARAMUJINHO/CONCHINHA",
-    "exige_validade": 1
   },
   {
     "codigo": "2224",
     "descricao": "MACARRÃO - PARAFUSO",
-    "exige_validade": 1
   },
   {
     "codigo": "2227",
     "descricao": "MACARRÃO - TORTILHONE",
-    "exige_validade": 1
   },
   {
     "codigo": "2235",
     "descricao": "OLÉO DE SOJA",
-    "exige_validade": 1
   },
   {
     "codigo": "2238",
     "descricao": "SAL REFINADO",
-    "exige_validade": 1
   },
   {
     "codigo": "2240",
     "descricao": "VINAGRE DE ÁLCOOL",
-    "exige_validade": 1
   },
   {
     "codigo": "3451",
     "descricao": "ATUM",
-    "exige_validade": 1
   },
   {
     "codigo": "6615",
     "descricao": "LEITE EM PÓ INSTANTÂNEO - INTEGRAL",
-    "exige_validade": 1
   },
   {
     "codigo": "7513",
     "descricao": "LENTILHA",
-    "exige_validade": 1
   },
   {
     "codigo": "8147",
     "descricao": "AMIDO DE MILHO",
-    "exige_validade": 1
   },
   {
     "codigo": "8875",
     "descricao": "EXTRATO TOMATE",
-    "exige_validade": 1
   },
   {
     "codigo": "13455",
     "descricao": "BISCOITO DOCE - SABOR LEITE",
-    "exige_validade": 1
   },
   {
     "codigo": "14944",
     "descricao": "CHOCOLATE EM PÓ SOLÚVEL - 1KG",
-    "exige_validade": 1
   },
   {
     "codigo": "23615",
     "descricao": "LEITE EM PÓ",
-    "exige_validade": 1
   },
   {
     "codigo": "25510",
     "descricao": "AÇÚCAR CRISTAL",
-    "exige_validade": 1
   },
   {
     "codigo": "27874",
     "descricao": "AVEIA EM FLOCOS FINOS",
-    "exige_validade": 1
   },
   {
     "codigo": "28052",
     "descricao": "DOCE DE LEITE - 1KG",
-    "exige_validade": 1
   },
   {
     "codigo": "29319",
     "descricao": "FILME DE PVC 28CM X 30M",
-    "exige_validade": 0
   },
   {
     "codigo": "29427",
     "descricao": "CANELA EM PÓ",
-    "exige_validade": 1
   },
   {
     "codigo": "29431",
     "descricao": "LOURO EM FOLHAS",
-    "exige_validade": 1
   },
   {
     "codigo": "29433",
     "descricao": "ORÉGANO SECO",
-    "exige_validade": 1
   },
   {
     "codigo": "29528",
     "descricao": "MANJERICÃO",
-    "exige_validade": 1
   },
   {
     "codigo": "34416",
     "descricao": "FÓRMULA INFANTIL DE SEGUIMENTO - PARA LACTENTES DE 6 A 12 MESES",
-    "exige_validade": 1
   },
   {
     "codigo": "34417",
     "descricao": "MILHO VERDE",
-    "exige_validade": 1
   },
   {
     "codigo": "34518",
     "descricao": "SACO PARA AMOSTRA DE ALIMENTOS",
-    "exige_validade": 0
   },
   {
     "codigo": "36706",
     "descricao": "ALECRIM",
-    "exige_validade": 1
   },
   {
     "codigo": "38355",
     "descricao": "COPO DE ÁGUA MINERAL - 200 ML",
-    "exige_validade": 0
   },
   {
     "codigo": "777",
     "descricao": "BALDE MULTIUSO (10 A 12 LITROS)",
-    "exige_validade": 0
   },
   {
     "codigo": "2888",
     "descricao": "BACIA GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "5573",
     "descricao": "BACIA MÉDIA",
-    "exige_validade": 0
   },
   {
     "codigo": "6144",
     "descricao": "COLHER SOBREMESA  - INOX",
-    "exige_validade": 0
   },
   {
     "codigo": "7539",
     "descricao": "PEGADOR DE MASSAS - INOX",
-    "exige_validade": 0
   },
   {
     "codigo": "7560",
     "descricao": "ESCOVA LAVAR MAMADEIRAS",
-    "exige_validade": 0
   },
   {
     "codigo": "8564",
     "descricao": "ACENDEDOR DE FOGÃO",
-    "exige_validade": 0
   },
   {
     "codigo": "8784",
     "descricao": "ESTERILIZADOR DE MAMADEIRAS",
-    "exige_validade": 0
   },
   {
     "codigo": "12548",
     "descricao": "POTE PLÁSTICO GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "14811",
     "descricao": "CONCHA GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "23386",
     "descricao": "COLHER DE POLIETILENO",
-    "exige_validade": 0
   },
   {
     "codigo": "23875",
     "descricao": "PÁ DE POLIETILENO",
-    "exige_validade": 0
   },
   {
     "codigo": "30667",
     "descricao": "PRATO DESCARTÁVEL - 15CM",
-    "exige_validade": 0
   },
   {
     "codigo": "31973",
     "descricao": "ESPETO/PALITO PARA CHURRASCO - 25CM",
-    "exige_validade": 0
   },
   {
     "codigo": "32805",
     "descricao": "SACO PARA PIPOCA",
-    "exige_validade": 0
   },
   {
     "codigo": "32929",
     "descricao": "CANECA - INOX",
-    "exige_validade": 0
   },
   {
     "codigo": "32991",
     "descricao": "PANELA CAÇAROLA GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "32994",
     "descricao": "POTE PLÁSTICO PEQUENO",
-    "exige_validade": 0
   },
   {
     "codigo": "33493",
     "descricao": "BALANÇA DIGITAL ELETRÔNICA DE COZINHA",
-    "exige_validade": 0
   },
   {
     "codigo": "34544",
     "descricao": "PÁ DE LIXO",
-    "exige_validade": 0
   },
   {
     "codigo": "37353",
     "descricao": "AMASSADOR DE BATATAS",
-    "exige_validade": 0
   },
   {
     "codigo": "37354",
     "descricao": "CORTADOR LEGUMES GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "37355",
     "descricao": "CORTADOR LEGUMES PEQUENO",
-    "exige_validade": 0
   },
   {
     "codigo": "37357",
     "descricao": "ESCORREDOR MACARRÃO DOMÉSTICO",
-    "exige_validade": 0
   },
   {
     "codigo": "37362",
     "descricao": "FORMA ALUMÍNIO GRANDE",
-    "exige_validade": 0
   },
   {
     "codigo": "37363",
     "descricao": "FORMA ALUMÍNIO MÉDIA",
-    "exige_validade": 0
   },
   {
     "codigo": "37366",
     "descricao": "GARRAFA TÉRMICA 12L",
-    "exige_validade": 0
   },
   {
     "codigo": "37368",
     "descricao": "JARRA COM TAMPA",
-    "exige_validade": 0
   },
   {
     "codigo": "37369",
     "descricao": "JARRA MEDIDORA",
-    "exige_validade": 0
   },
   {
     "codigo": "37371",
     "descricao": "LIXEIRA EM PVC COM TAMPA - 15 LITROS",
-    "exige_validade": 0
   },
   {
     "codigo": "37372",
     "descricao": "LUVA TÉRMICA",
-    "exige_validade": 0
   },
   {
     "codigo": "37373",
     "descricao": "PANELA CAÇAROLA MÉDIA",
-    "exige_validade": 0
   },
   {
     "codigo": "37376",
     "descricao": "PANELA CALDEIRÃO MÉDIA",
-    "exige_validade": 0
   },
   {
     "codigo": "37379",
     "descricao": "PENEIRA/COADOR DE INOX",
-    "exige_validade": 0
   },
   {
     "codigo": "37381",
     "descricao": "PLACA DE POLIETILENO BRANCA",
-    "exige_validade": 0
   },
   {
     "codigo": "37382",
     "descricao": "PLACA DE POLIETILENO VERDE",
-    "exige_validade": 0
   },
   {
     "codigo": "37383",
     "descricao": "PLACA DE POLIETILENO VERMELHA",
-    "exige_validade": 0
   },
   {
     "codigo": "37384",
     "descricao": "POTE PLÁSTICO PEQUENO TEMPEROS",
-    "exige_validade": 0
   },
   {
     "codigo": "37386",
     "descricao": "PRATO FUNDO DE INOX",
-    "exige_validade": 0
   },
   {
     "codigo": "37387",
     "descricao": "RALADOR MANUAL",
-    "exige_validade": 0
   }
 ];

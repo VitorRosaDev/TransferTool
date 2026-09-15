@@ -1,6 +1,6 @@
 import { IRanchoState } from './IRanchoState';
-import { ItemRancho, PayloadRPA } from '../interfaces';
-import { ListaRancho } from '../ListaRancho';
+import type { ItemRancho, PayloadRPA } from '../interfaces';
+import type { ListaRancho } from '../ListaRancho';
 import { OperacaoBloqueadaError, TransicaoInvalidaError } from '../errors';
 
 export class ExportadaState implements IRanchoState {
@@ -31,7 +31,20 @@ export class ExportadaState implements IRanchoState {
   }
 
   reabrir(): void {
-    throw new TransicaoInvalidaError('Exportada', 'Rascunho');
+    this.contexto.transicionarParaRascunho();
+  }
+
+  gerarPayload(): PayloadRPA {
+    return {
+      id_app: this.contexto.data.id || 0,
+      data_geracao: new Date().toISOString(),
+      codigo_origem: this.contexto.data.codigo_origem,
+      codigo_destino: this.contexto.data.codigo_destino,
+      itens: this.contexto.data.itens.map(item => ({
+        codigo: item.codigo_item,
+        quantidade: item.quantidade
+      }))
+    };
   }
 
   exportar(): PayloadRPA {

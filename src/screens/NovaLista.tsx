@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { ListaModel, Suggestion } from '../models/ListaModel';
+import { ListaModel } from '../models/ListaModel';
+import type { Suggestion } from '../models/ListaModel';
+import { ListaRanchoService } from '../models/ListaRanchoService';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { AppHeader } from '../components/AppHeader';
 
 export function NovaLista() {
   const db = useSQLiteContext();
@@ -119,7 +122,7 @@ export function NovaLista() {
     if (!origem || !destino) return;
 
     try {
-      const novaListaId = await ListaModel.criarRascunho(db, origem.id, destino.id);
+      const novaListaId = await ListaRanchoService.criarRascunho(db, origem.id, destino.id);
       setOrigem(null);
       setDestino(null);
       setSearchQueryOrigem('');
@@ -136,13 +139,11 @@ export function NovaLista() {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Cabeçalho Fixo Unificado */}
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Montar Nova Carga</Text>
-      </View>
+      <AppHeader
+        title="Montar Nova Carga"
+        navigationMode="back"
+        onPress={() => navigation.goBack()}
+      />
 
       {/* Conteúdo com Acordeon */}
       <ScrollView 
@@ -300,17 +301,6 @@ export function NovaLista() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-  },
-  backBtn: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', marginLeft: 16 },
-  
   content: { flex: 1, padding: 24 },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 16, marginBottom: 24 },

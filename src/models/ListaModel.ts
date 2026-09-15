@@ -1,8 +1,9 @@
-import { SQLiteDatabase } from 'expo-sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
+import type { StatusLista } from './interfaces';
 
 export interface ListaHist {
   id: number;
-  status: string;
+  status: StatusLista;
   data_criacao: string;
   origem_nome: string;
   destino_nome: string;
@@ -10,7 +11,7 @@ export interface ListaHist {
 
 export interface ListaDetalhes {
   id: number;
-  status: string;
+  status: StatusLista;
   origem_nome: string;
   destino_nome: string;
 }
@@ -39,26 +40,6 @@ export class ListaModel {
     );
   }
 
-  /** Cria o rascunho de uma nova lista e registra o log inicial */
-  static async criarRascunho(db: SQLiteDatabase, origemId: number, destinoId: number): Promise<number> {
-    const dataCriacao = new Date().toISOString();
-    
-    // Insere Lista
-    const resultLista = await db.runAsync(
-      `INSERT INTO listas (origem_id, escola_id, data_criacao, status) VALUES (?, ?, ?, ?)`,
-      [origemId, destinoId, dataCriacao, 'Rascunho']
-    );
-    const novaListaId = resultLista.lastInsertRowId;
-
-    // Registra o Estado Inicial
-    await db.runAsync(
-      `INSERT INTO log_transicao (lista_rancho_id, estado_anterior, estado_novo, data_transicao, usuario, motivo) VALUES (?, ?, ?, ?, ?, ?)`,
-      [novaListaId, 'Nenhum', 'Rascunho', dataCriacao, 'Operador_Local', 'Criação inicial da lista']
-    );
-
-    return novaListaId;
-  }
-
   /** Puxa histórico reverso de todas as listas criadas */
   static async getHistorico(db: SQLiteDatabase): Promise<ListaHist[]> {
     return await db.getAllAsync<ListaHist>(`
@@ -81,25 +62,4 @@ export class ListaModel {
     `, [listaId]);
   }
 
-  /** Muda o status para consolidada e registra a transição de estado */
-  static async consolidar(db: SQLiteDatabase, listaId: number): Promise<void> {
-    const dataConsolidacao = new Date().toISOString();
-    
-    // Altera Status Principal
-    await db.runAsync(`UPDATE listas SET status = 'Consolidada' WHERE id = ?`, [listaId]);
-
-    // Registra a Mudança de Estado
-    await db.runAsync(
-      `INSERT INTO log_transicao (lista_rancho_id, estado_anterior, estado_novo, data_transicao, usuario, motivo) VALUES (?, ?, ?, ?, ?, ?)`,
-      [listaId, 'Rascunho', 'Consolidada', dataConsolidacao, 'Operador_Local', 'Carga finalizada fisicamente no coletor']
-    );
-  }
-
-  /** Deleta uma lista inteira e todos os relacionamentos em cascata */
-  static async deletar(db: SQLiteDatabase, listaId: number): Promise<void> {
-    // Força a deleção para garantir limpeza de lixo caso o PRAGMA ON DELETE CASCADE falhe
-    await db.runAsync(`DELETE FROM itens_lista WHERE lista_id = ?`, [listaId]);
-    await db.runAsync(`DELETE FROM log_transicao WHERE lista_rancho_id = ?`, [listaId]);
-    await db.runAsync(`DELETE FROM listas WHERE id = ?`, [listaId]);
-  }
 }

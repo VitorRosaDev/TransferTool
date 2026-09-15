@@ -1,5 +1,5 @@
-import { IRanchoState } from './states/IRanchoState';
-import { ItemRancho, IListaRanchoData, PayloadRPA } from './interfaces';
+import type { IRanchoState } from './states/IRanchoState';
+import type { ItemRancho, IListaRanchoData, PayloadRPA } from './interfaces';
 import { RascunhoState } from './states/RascunhoState';
 import { ConsolidadaState } from './states/ConsolidadaState';
 import { ExportadaState } from './states/ExportadaState';
@@ -11,8 +11,6 @@ export class ListaRancho {
   constructor(initialData?: IListaRanchoData) {
     if (initialData) {
       this.data = { ...initialData };
-      // Restaurar o estado baseado na string salva no banco
-      // Implementação de factory simplificada
       this.state = this.restoreState(initialData.status);
     } else {
       this.data = {
@@ -28,8 +26,6 @@ export class ListaRancho {
     }
   }
 
-  // --- Delegação para o State atual ---
-  
   public adicionarItem(item: ItemRancho): void {
     this.state.adicionarItem(item);
   }
@@ -54,11 +50,13 @@ export class ListaRancho {
     this.state.reabrir();
   }
 
+  public gerarPayload(): PayloadRPA {
+    return this.state.gerarPayload();
+  }
+
   public exportar(): PayloadRPA {
     return this.state.exportar();
   }
-
-  // --- Gerenciamento Interno do Contexto ---
 
   public setState(newState: IRanchoState): void {
     this.state = newState;
@@ -69,7 +67,14 @@ export class ListaRancho {
     return this.state;
   }
 
-  // Quebra de dependência circular tratada na injeção (serão implementadas as outras classes a seguir)
+  public transicionarParaConsolidada(): void {
+    this.setState(new ConsolidadaState(this));
+  }
+
+  public transicionarParaRascunho(): void {
+    this.setState(new RascunhoState(this));
+  }
+
   private restoreState(statusString: string): IRanchoState {
     switch (statusString) {
       case 'Rascunho': return new RascunhoState(this);

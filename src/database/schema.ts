@@ -33,7 +33,6 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       codigo TEXT NOT NULL UNIQUE,
       descricao TEXT NOT NULL,
       descricao_busca TEXT NOT NULL,
-      exige_validade INTEGER NOT NULL DEFAULT 1, -- 1 = TRUE, 0 = FALSE
       ativo INTEGER NOT NULL DEFAULT 1
     );
 
@@ -52,7 +51,6 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       lista_id INTEGER NOT NULL,
       produto_id INTEGER NOT NULL,
       quantidade REAL NOT NULL,
-      data_validade TEXT,
       FOREIGN KEY(lista_id) REFERENCES listas(id) ON DELETE CASCADE,
       FOREIGN KEY(produto_id) REFERENCES itens(id)
     );
@@ -69,6 +67,21 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       FOREIGN KEY(lista_rancho_id) REFERENCES listas(id) ON DELETE CASCADE
     );
   `);
+
+  await removerColunasDeValidade(db);
+}
+
+/** Remove campos obsoletos de bancos criados por versões anteriores do app. */
+async function removerColunasDeValidade(db: SQLite.SQLiteDatabase) {
+  const colunasItens = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens)');
+  if (colunasItens.some(coluna => coluna.name === 'exige_validade')) {
+    await db.execAsync('ALTER TABLE itens DROP COLUMN exige_validade');
+  }
+
+  const colunasItensLista = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens_lista)');
+  if (colunasItensLista.some(coluna => coluna.name === 'data_validade')) {
+    await db.execAsync('ALTER TABLE itens_lista DROP COLUMN data_validade');
+  }
 }
 
 /**
@@ -109,8 +122,8 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase) {
   // 3. Popular Itens (Catálogo sem quantidade)
   for (const item of SEED_ITENS) {
     await db.runAsync(
-      'INSERT INTO itens (codigo, descricao, descricao_busca, exige_validade) VALUES (?, ?, ?, ?)', 
-      [item.codigo, item.descricao, removeAcentos(item.descricao), item.exige_validade]
+      'INSERT INTO itens (codigo, descricao, descricao_busca) VALUES (?, ?, ?)',
+      [item.codigo, item.descricao, removeAcentos(item.descricao)]
     );
   }
   

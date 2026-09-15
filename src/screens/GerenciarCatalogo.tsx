@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert,
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../contexts/ThemeContext';
-import { CatalogoModel, ItemCatalogo } from '../models/CatalogoModel';
+import { CatalogoModel } from '../models/CatalogoModel';
+import type { ItemCatalogo } from '../models/CatalogoModel';
 
 type ActionType = 'adicionar' | 'remover' | 'reativar';
 type CategoryType = 'deposito' | 'escola' | 'item';

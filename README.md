@@ -1,9 +1,9 @@
 # 📦 TransferTool — Hub de Cargas Offline-First
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-emerald?style=for-the-badge&logo=expo)](file:///c:/dev/TransferTool/TransferTool_Vault/index.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)](file:///c:/dev/TransferTool/package.json)
-[![SQLite](https://img.shields.io/badge/Database-SQLite--Offline-blueviolet?style=for-the-badge&logo=sqlite)](file:///c:/dev/TransferTool/src/database/)
-[![License](https://img.shields.io/badge/Audited-QA--Pass-success?style=for-the-badge&logo=jest)](file:///c:/dev/TransferTool/src/__tests__/)
+[![Version](https://img.shields.io/badge/Version-1.0.0-emerald?style=for-the-badge&logo=expo)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=for-the-badge&logo=typescript)](package.json)
+[![SQLite](https://img.shields.io/badge/Database-SQLite--Offline-blueviolet?style=for-the-badge&logo=sqlite)](src/database/)
+[![Tests](https://img.shields.io/badge/Tests-Jest-success?style=for-the-badge&logo=jest)](src/__tests__/)
 
 O **TransferTool** é uma aplicação móvel profissional desenvolvida sob medida para o **Almoxarifado Central Municipal**. Projetado para funcionar em ambientes com **zero conectividade** (offline-first), o aplicativo atua como um Coletor de Dados Inteligente e Gerador de Cargas, otimizando o fluxo logístico de distribuição de mantimentos (rancho escolar e materiais de consumo) para as escolas da rede municipal.
 
@@ -20,39 +20,37 @@ As telas foram desenhadas seguindo princípios rigorosos de **acessibilidade em 
 <!-- slide -->
 ![3. Busca e Escaneamento de Produtos](assets/img/Screenshot_2026-05-17-17-10-59-138_host.exp.exponent.jpg)
 <!-- slide -->
-![4. Alerta de Validade Vencida no Ponto de Coleta](assets/img/Screenshot_2026-05-17-17-11-26-067_host.exp.exponent.jpg)
-<!-- slide -->
 ![5. Gestão em Lote e CRUD do Catálogo](assets/img/Screenshot_2026-05-17-17-12-05-148_host.exp.exponent.jpg)
 ````
 
 > [!NOTE]
-> Para ver um vídeo completo do fluxo operacional do coletor móvel, assista ao arquivo gravado em: [Screenrecorder-2026-05-17-17-00-47-589.mp4](file:///c:/dev/TransferTool/assets/img/Screenrecorder-2026-05-17-17-00-47-589.mp4).
+> Para ver um vídeo completo do fluxo operacional do coletor móvel, consulte o arquivo gravado em `assets/img/Screenrecorder-2026-05-17-17-00-47-589.mp4`.
 
 ---
 
 ## 🏗️ Arquitetura de Software e Padrões de Design
 
-O projeto segue padrões de engenharia de software de alta qualidade para garantir robustez, integridade dos dados e desacoplamento total.
+O projeto separa a interface, as regras do domínio e a persistência local para manter o fluxo de conferência organizado e testável.
 
-### 🛡️ Padrão Strict MVC (Model-View-Controller)
-Garante isolamento absoluto de responsabilidades:
-* **Views (Telas React Native):** São passivas e puramente focadas em renderizar layout e escutar eventos do usuário. Não realizam queries SQL ou manipulam transações direta de dados.
-* **Models (Camada de Domínio):** Gerenciam de forma estrita o estado e a persistência lógica de dados no banco local SQLite, representados por:
-  - [ListaModel](file:///c:/dev/TransferTool/src/models/ListaModel.ts): Lógica de criação de rascunhos, consolidação e remoção de cargas.
-  - [ItemModel](file:///c:/dev/TransferTool/src/models/ItemModel.ts): Adição, edição em carrinho logístico e busca parametrizada contra SQL Injection.
-  - [CatalogoModel](file:///c:/dev/TransferTool/src/models/CatalogoModel.ts): Gestão em lote de CRUD offline e Soft Delete das entidades operacionais.
+### 🛡️ Separação de responsabilidades
+* **Views (Telas React Native):** Capturam ações, exibem dados e apresentam erros. Não realizam escritas SQL nem controlam transações.
+* **ListaRanchoService:** É a fronteira de escrita do agregado. Reidrata listas, delega as regras ao State Pattern e persiste alterações em transações SQLite.
+* **ListaRancho e States:** Representam o domínio e controlam as operações permitidas em cada status.
+* **Models de consulta:** `ListaModel` e `ItemModel` concentram consultas de histórico, catálogo e carrinho.
+* **CatalogoModel:** Gerencia o CRUD offline do catálogo e o soft delete das entidades catalogadas.
+* **ExportacaoModel:** Serializa e compartilha o arquivo JSON; a geração dos payloads pertence ao domínio.
 
 ### 🔄 Padrão State (Ciclo de Vida da Carga)
-Controla rigorosamente o fluxo de movimentação das cargas logísticas. O ciclo de vida é encapsulado e imutável após consolidação:
+Controla as operações permitidas conforme o status da carga. A exportação global inclui listas consolidadas e exportadas, e listas consolidadas ou exportadas podem ser reabertas para correção:
 
 ```mermaid
 stateDiagram-v2
     [*] --> Rascunho : Início da Carga (Montar)
     Rascunho --> Rascunho : Edição física (Adiciona/Remove Itens)
     Rascunho --> Consolidada : Fechamento de Carga (Assinatura física)
-    Consolidada --> Exportada : Geração de Payload JSON / RPA
-    Consolidada --> [*]
-    Exportada --> [*]
+    Consolidada --> Rascunho : Reabertura para correção
+    Consolidada --> Exportada : Exportação global
+    Exportada --> Rascunho : Reabertura para correção
 ```
 
 ---
@@ -92,7 +90,7 @@ erDiagram
         string codigo "UNIQUE"
         string descricao
         string descricao_busca
-        boolean exige_validade "DEFAULT 1"
+        boolean ativo "DEFAULT 1"
     }
 
     listas {
@@ -108,20 +106,31 @@ erDiagram
         int lista_id FK
         int produto_id FK
         real quantidade
-        string data_validade "YYYY-MM-DD"
+    }
+
+    log_transicao {
+        int id PK
+        int lista_rancho_id FK
+        string estado_anterior
+        string estado_novo
+        string data_transicao
+        string usuario
+        string motivo
     }
 ```
+
+Itens de lista e registros de auditoria usam `ON DELETE CASCADE` quando a lista é excluída. A exclusão é física e pode remover também o histórico local da lista.
 
 ---
 
 ## 💼 Regras de Negócio Centrais
 
-1. **Bloqueio de Carga Consolidada:** Uma vez que o operador consolida a carga, ela é imutável. Não é permitido adicionar, alterar a quantidade ou excluir itens. Isso assegura a conformidade entre o material fisicamente embarcado no caminhão e a guia digital.
-2. **Exigência Dinâmica de Data de Validade:** 
-   - Se o produto for perecível (Ex: Alimentos — `exige_validade = 1`), o campo de data de validade é de preenchimento obrigatório com validação de máscara de data `DD/MM/AAAA`.
-   - Se for não-perecível (Ex: Equipamentos ou limpeza — `exige_validade = 0`), o campo é ocultado na interface e gravado como `NULL`, aumentando a velocidade operacional no depósito.
-3. **Auditoria Visual de Produtos Vencidos:** O sistema compara a data de validade digitada pelo operador com a data do sistema do coletor no momento da inserção. Se vencido, exibe imediatamente um alerta visual vermelho destacando `"Produto Vencido!"` no formulário para bloquear o envio de lotes impróprios para as escolas.
-4. **Soft Delete do Catálogo:** A remoção de itens, depósitos ou destinos do catálogo utiliza a flag `ativo = 0`. Isso impede falhas de integridade em cargas existentes que já referenciam esses dados logísticos no histórico offline.
+1. **Consolidação:** Uma lista em `Rascunho` precisa ter origem, destino e pelo menos um item para ser consolidada.
+2. **Bloqueio por estado:** Listas `Consolidada` e `Exportada` não permitem adicionar, alterar ou remover itens diretamente.
+3. **Reabertura:** Listas `Consolidada` e `Exportada` podem voltar para `Rascunho` para correções ou inclusão de itens.
+4. **Exclusão:** A exclusão física é permitida em qualquer estado e remove a lista, seus itens e seu log local por cascata. O histórico oficial das cargas permanece no ERP de destino.
+5. **Soft Delete do Catálogo:** A remoção de itens, depósitos ou destinos do catálogo utiliza a flag `ativo = 0`, preservando referências existentes.
+6. **Validade:** Data de validade não faz parte do domínio atual. Bancos criados por versões anteriores têm as colunas obsoletas removidas durante a inicialização.
 
 ---
 
@@ -131,27 +140,27 @@ O app gera um arquivo de exportação em JSON estritamente parametrizado apenas 
 
 ### Exemplo de Payload Gerado
 
+O botão de exportação do Hub gera um único arquivo JSON em formato de array. Ele inclui listas `Consolidada` e `Exportada` em ordem cronológica. Listas em `Rascunho` não são incluídas.
+
 ```json
-{
-  "cabecalho": {
-    "lista_id": 1,
-    "origem_codigo": "DEP-ALIM-CENTRAL",
-    "destino_codigo": "ESC-MACHADO-ASSIS",
-    "data_criacao": "2026-05-17T16:40:00.000Z"
-  },
-  "itens": [
-    {
-      "produto_codigo": "2201",
-      "quantidade": 150.0,
-      "data_validade": "2027-12-10"
-    },
-    {
-      "produto_codigo": "37357",
-      "quantidade": 10.0,
-      "data_validade": null
-    }
-  ]
-}
+[
+  {
+    "id_app": 1,
+    "data_geracao": "2026-05-17T16:40:00.000Z",
+    "codigo_origem": "DEP-ALIM-CENTRAL",
+    "codigo_destino": "ESC-MACHADO-ASSIS",
+    "itens": [
+      {
+        "codigo": "2201",
+        "quantidade": 150
+      },
+      {
+        "codigo": "37357",
+        "quantidade": 10
+      }
+    ]
+  }
+]
 ```
 
 ---
@@ -175,18 +184,18 @@ Para iniciar o bundler Metro e escolher a plataforma de execução (Android, iOS
 npm run start
 ```
 
-### 🔬 Auditoria e Testes Rigorosos (Qualidade v1.0)
-Para certificar que o código atende às exigências de estabilidade:
+### 🔬 Verificação local
+Os comandos abaixo verificam os tipos e executam os testes Jest atuais. A suíte contém testes unitários, incluindo testes do domínio com SQLite simulado; ela ainda não substitui testes de integração com um banco SQLite real.
 
 * **Checagem de Tipos Estática (TypeScript):**
   ```bash
   npx tsc --noEmit
   ```
-* **Execução dos Testes Unitários de Integração (Jest):**
+* **Execução dos testes Jest:**
   ```bash
   npm run test
   ```
 
 ---
 
-*Gerenciado com rigor profissional pelo PM Sênior de Agentes de IA do Projeto TransferTool — 2026*
+*Gerenciado e desenvolvido por Vitor Rodrigues da Rosa — Projeto TransferTool — 2026*

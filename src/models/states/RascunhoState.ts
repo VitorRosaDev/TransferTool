@@ -1,8 +1,7 @@
 import { IRanchoState } from './IRanchoState';
-import { ItemRancho, PayloadRPA } from '../interfaces';
-import { ListaRancho } from '../ListaRancho';
-import { OperacaoBloqueadaError, TransicaoInvalidaError, ValidacaoItemError } from '../errors';
-import { ConsolidadaState } from './ConsolidadaState'; // Será implementada
+import type { ItemRancho, PayloadRPA } from '../interfaces';
+import type { ListaRancho } from '../ListaRancho';
+import { TransicaoInvalidaError, ValidacaoItemError } from '../errors';
 
 export class RascunhoState implements IRanchoState {
   constructor(private contexto: ListaRancho) {}
@@ -16,14 +15,8 @@ export class RascunhoState implements IRanchoState {
       throw new ValidacaoItemError("A quantidade do item deve ser maior que zero.");
     }
     
-    // Regra de Negócio: Se o item exige validade, não pode entrar sem ela.
-    if (item.exige_validade && !item.data_validade) {
-      throw new ValidacaoItemError(`O item ${item.codigo_item} exige data de validade.`);
-    }
-
     const index = this.contexto.data.itens.findIndex(i => i.codigo_item === item.codigo_item);
     if (index >= 0) {
-      // Se já existe, soma a quantidade (assumindo mesma validade no contexto de simplificação)
       this.contexto.data.itens[index].quantidade += item.quantidade;
     } else {
       this.contexto.data.itens.push(item);
@@ -55,7 +48,6 @@ export class RascunhoState implements IRanchoState {
   }
 
   consolidar(): void {
-    // Validações antes de transitar
     if (!this.contexto.data.codigo_origem || !this.contexto.data.codigo_destino) {
       throw new ValidacaoItemError("Origem e Destino devem estar preenchidos para consolidar.");
     }
@@ -63,12 +55,15 @@ export class RascunhoState implements IRanchoState {
       throw new ValidacaoItemError("A lista deve ter pelo menos um item para ser consolidada.");
     }
 
-    this.contexto.setState(new ConsolidadaState(this.contexto));
+    this.contexto.transicionarParaConsolidada();
   }
 
   reabrir(): void {
-    // Já está em Rascunho
     return; 
+  }
+
+  gerarPayload(): PayloadRPA {
+    throw new TransicaoInvalidaError('Rascunho', 'Exportada');
   }
 
   exportar(): PayloadRPA {

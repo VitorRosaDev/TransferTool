@@ -1,4 +1,4 @@
-import { ItemRancho, PayloadRPA } from '../interfaces';
+import type { ItemRancho, PayloadRPA } from '../interfaces';
 
 /**
  * Interface base para os Estados do Rancho.
@@ -15,5 +15,6 @@ export interface IRanchoState {
   
   consolidar(): void;
   reabrir(): void;
+  gerarPayload(): PayloadRPA;
   exportar(): PayloadRPA;
 }
