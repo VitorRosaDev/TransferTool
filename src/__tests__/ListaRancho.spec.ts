@@ -18,6 +18,21 @@ describe('Padrão State: ListaRancho', () => {
     expect(lista.data.itens[0].quantidade).toBe(10);
   });
 
+  it('deve rejeitar quantidade não finita ao adicionar item', () => {
+    const lista = new ListaRancho();
+
+    expect(() => lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: Number.NaN }))
+      .toThrow('A quantidade do item deve ser maior que zero');
+  });
+
+  it('deve rejeitar quantidade não finita ao alterar item', () => {
+    const lista = new ListaRancho();
+    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+
+    expect(() => lista.alterarQuantidade('ALIM-001', Number.POSITIVE_INFINITY))
+      .toThrow('A quantidade do item deve ser um número válido');
+  });
+
   it('deve bloquear a consolidação se origem e destino não estiverem definidos ou sem itens', () => {
     const lista = new ListaRancho();
     expect(() => lista.consolidar()).toThrow(ValidacaoItemError);

@@ -11,7 +11,7 @@ export class RascunhoState implements IRanchoState {
   }
 
   adicionarItem(item: ItemRancho): void {
-    if (item.quantidade <= 0) {
+    if (!Number.isFinite(item.quantidade) || item.quantidade <= 0) {
       throw new ValidacaoItemError("A quantidade do item deve ser maior que zero.");
     }
     
@@ -28,6 +28,9 @@ export class RascunhoState implements IRanchoState {
   }
 
   alterarQuantidade(codigoItem: string, quantidade: number): void {
+    if (!Number.isFinite(quantidade)) {
+      throw new ValidacaoItemError("A quantidade do item deve ser um número válido.");
+    }
     if (quantidade <= 0) {
       this.removerItem(codigoItem);
       return;

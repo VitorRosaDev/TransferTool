@@ -1,75 +1,72 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView } from 'react-native';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel } from '../models/ListaModel';
 import type { ListaHist } from '../models/ListaModel';
 import { ItemModel } from '../models/ItemModel';
-import type { ItemCarrinho } from '../models/ItemModel';
+import type { ItemCarrinho, ProdutoCatalogo } from '../models/ItemModel';
 import { useTheme } from '../contexts/ThemeContext';
 import { ListaRanchoService } from '../models/ListaRanchoService';
 import { AppHeader } from '../components/AppHeader';
+import { ListaCard } from '../components/ListaCard';
+import { NovaCargaCard } from '../components/NovaCargaCard';
+import { encontrarListaMaisRecente, ordenarListas, reconciliarListaSelecionada } from '../models/ListaOrdenacao';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
 const CARD_MARGIN = 10;
 const SNAP_INTERVAL = CARD_WIDTH + (CARD_MARGIN * 2);
 
-const ordenarListas = (listas: ListaHist[]): ListaHist[] => {
-  const possuiExportada = listas.some(lista => lista.status === 'Exportada');
-  const prioridade: Record<string, number> = possuiExportada
-    ? { Exportada: 0, Consolidada: 1, Rascunho: 2 }
-    : { Consolidada: 0, Rascunho: 1 };
-
-  return [...listas].sort((a, b) => {
-    const diferencaStatus = (prioridade[a.status] ?? 3) - (prioridade[b.status] ?? 3);
-    if (diferencaStatus !== 0) return diferencaStatus;
-
-    const diferencaData = new Date(a.data_criacao).getTime() - new Date(b.data_criacao).getTime();
-    return diferencaData !== 0 ? diferencaData : a.id - b.id;
-  });
-};
-
-// Utilitário para Data Amigável
-const formatFriendlyDate = (isoString: string) => {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${day}/${month}/${year} às ${hours}:${minutes}`;
-};
-
 export function ListasCriadas() {
   const db = useSQLiteContext();
   const navigation = useNavigation<any>();
-  const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
 
   const [listas, setListas] = useState<ListaHist[]>([]);
   const [selectedListaId, setSelectedListaId] = useState<number | null>(null);
+  const [expandedListaId, setExpandedListaId] = useState<number | null>(null);
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
   const [loadingItens, setLoadingItens] = useState(false);
+  const [idListaCarregando, setIdListaCarregando] = useState<number | null>(null);
 
   // Estados do Scanner Integrado
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<ProdutoCatalogo[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [itemAtivo, setItemAtivo] = useState<any | null>(null);
+  const [itemAtivo, setItemAtivo] = useState<ProdutoCatalogo | null>(null);
   const [editandoItemId, setEditandoItemId] = useState<number | null>(null);
   const [quantidade, setQuantidade] = useState('');
 
   const flatListRef = useRef<FlatList>(null);
+  const idListaParaFocarRef = useRef<number | null>(null);
+  const idCarregamentoItensRef = useRef<number | null>(null);
+  const versaoCarregamentoListasRef = useRef(0);
+  const idListaSelecionadaRef = useRef<number | null>(null);
 
-  const loadListas = useCallback(async () => {
+  useEffect(() => {
+    idListaSelecionadaRef.current = selectedListaId;
+  }, [selectedListaId]);
+
+  const carregarListas = useCallback(async (focarUltima: boolean) => {
+    const versaoCarregamento = ++versaoCarregamentoListasRef.current;
     try {
       const result = await ListaModel.getHistorico(db);
-      setListas(ordenarListas(result));
+      const listasOrdenadas = ordenarListas(result);
+      if (versaoCarregamento !== versaoCarregamentoListasRef.current) return;
+
+      if (focarUltima) {
+        idListaParaFocarRef.current = encontrarListaMaisRecente(listasOrdenadas)?.id ?? null;
+      } else {
+        const idReconciliado = reconciliarListaSelecionada(listasOrdenadas, idListaSelecionadaRef.current);
+        if (idReconciliado !== idListaSelecionadaRef.current) {
+          idListaParaFocarRef.current = idReconciliado;
+        }
+      }
+      setListas(listasOrdenadas);
     } catch (error) {
       console.error("Erro ao carregar histórico de listas:", error);
     }
@@ -77,8 +74,8 @@ export function ListasCriadas() {
 
   useFocusEffect(
     useCallback(() => {
-      loadListas();
-    }, [loadListas])
+      carregarListas(true);
+    }, [carregarListas])
   );
 
   // Carregar itens quando a lista selecionada mudar
@@ -86,34 +83,31 @@ export function ListasCriadas() {
     if (selectedListaId) {
       loadItens(selectedListaId);
     } else {
+      idCarregamentoItensRef.current = null;
       setCarrinho([]);
+      setLoadingItens(false);
+      setIdListaCarregando(null);
     }
   }, [selectedListaId]);
 
-  // Inicializar seleção quando as listas carregarem ou mudar param
   useEffect(() => {
-    if (listas.length > 0) {
-      const paramId = route.params?.listaId;
-      if (paramId && listas.some(lista => lista.id === paramId)) {
-        setSelectedListaId(paramId);
-        const index = listas.findIndex(l => l.id === paramId);
-        if (index !== -1) {
-          setTimeout(() => {
-            flatListRef.current?.scrollToOffset({
-              offset: index * SNAP_INTERVAL,
-              animated: true
-            });
-          }, 100);
-        }
-      } else if (selectedListaId !== null && listas.some(lista => lista.id === selectedListaId)) {
-        return;
-      } else {
-        setSelectedListaId(listas[0].id);
-      }
-    } else {
+    if (listas.length === 0) {
       setSelectedListaId(null);
+      return;
     }
-  }, [listas, route.params?.listaId, selectedListaId]);
+
+    const idListaParaFocar = idListaParaFocarRef.current;
+    if (idListaParaFocar === null) return;
+
+    const indiceLista = listas.findIndex(lista => lista.id === idListaParaFocar);
+    if (indiceLista === -1) return;
+
+    setSelectedListaId(idListaParaFocar);
+    idListaParaFocarRef.current = null;
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToIndex({ index: indiceLista, animated: false });
+    });
+  }, [listas]);
 
   // Busca dinâmica de itens (Scanner Logic)
   useEffect(() => {
@@ -135,29 +129,42 @@ export function ListasCriadas() {
   }, [searchQuery, db]);
 
   const loadItens = async (id: number) => {
+    idCarregamentoItensRef.current = id;
+    setIdListaCarregando(id);
     setLoadingItens(true);
     try {
       const result = await ItemModel.getItensCarrinho(db, id);
-      setCarrinho(result);
+      if (idCarregamentoItensRef.current === id) {
+        setCarrinho(result);
+      }
     } catch (error) {
       console.error("Erro ao carregar itens:", error);
     } finally {
-      setLoadingItens(false);
+      if (idCarregamentoItensRef.current === id) {
+        setLoadingItens(false);
+        setIdListaCarregando(null);
+      }
     }
   };
 
-  const onScrollEnd = (e: any) => {
+  const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffset = e.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / SNAP_INTERVAL);
     if (listas[index]) {
       setSelectedListaId(listas[index].id);
+      setExpandedListaId(null);
     }
+  };
+
+  const toggleListaDetalhes = (listaId: number) => {
+    setSelectedListaId(listaId);
+    setExpandedListaId(currentId => currentId === listaId ? null : listaId);
   };
 
   const handleExportarTodas = async () => {
     try {
       await ListaRanchoService.exportarTodas(db);
-      loadListas();
+      carregarListas(false);
     } catch (error) {
       console.error(error);
       Alert.alert("Erro", error instanceof Error ? error.message : "Falha ao gerar arquivo de exportação.");
@@ -168,7 +175,7 @@ export function ListasCriadas() {
     const deleteAction = async () => {
       try {
         await ListaRanchoService.deletar(db, id);
-        loadListas();
+        carregarListas(false);
       } catch (error) {
         console.error("Erro ao deletar lista:", error);
       }
@@ -193,7 +200,7 @@ export function ListasCriadas() {
     const consolidarAction = async () => {
       try {
         await ListaRanchoService.consolidar(db, id);
-        loadListas();
+        carregarListas(false);
       } catch (error) {
         console.error(error);
       }
@@ -209,7 +216,7 @@ export function ListasCriadas() {
     const reabrirAction = async () => {
       try {
         await ListaRanchoService.reabrir(db, id);
-        loadListas();
+        carregarListas(false);
       } catch (error) {
         console.error(error);
         Alert.alert("Erro", "Não foi possível reabrir esta lista.");
@@ -238,7 +245,7 @@ export function ListasCriadas() {
     ]);
   };
 
-  const openModalAdd = (item: any) => {
+  const openModalAdd = (item: ProdutoCatalogo) => {
     setItemAtivo(item);
     setEditandoItemId(null);
     setQuantidade('');
@@ -262,6 +269,10 @@ export function ListasCriadas() {
     if (!itemAtivo || !quantidade || !selectedListaId) return;
     try {
       const qtdNum = parseFloat(quantidade);
+      if (!Number.isFinite(qtdNum) || qtdNum <= 0) {
+        Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
+        return;
+      }
       if (editandoItemId) {
         await ListaRanchoService.alterarQuantidade(db, editandoItemId, qtdNum);
       } else {
@@ -271,6 +282,7 @@ export function ListasCriadas() {
       loadItens(selectedListaId);
     } catch (e) {
       console.error(e);
+      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível salvar o item.');
     }
   };
 
@@ -297,50 +309,6 @@ export function ListasCriadas() {
           </TouchableOpacity>
         )}
       </TouchableOpacity>
-    );
-  };
-
-  const renderListaCard = ({ item, index }: { item: ListaHist; index: number }) => {
-    const isConsolidada = item.status === 'Consolidada';
-    const isExportada = item.status === 'Exportada';
-    const isSelected = item.id === selectedListaId;
-
-    return (
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colors.card, width: CARD_WIDTH },
-          isSelected && { borderColor: colors.primary, borderWidth: 2, elevation: 4 }
-        ]}
-      >
-        <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>Lista #{index + 1}</Text>
-          <View style={[
-            styles.badge,
-            isConsolidada ? styles.badgeConsolidada :
-              isExportada ? styles.badgeExportada : styles.badgeRascunho
-          ]}>
-            <Text style={styles.badgeText}>{item.status}</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.deleteBtn}
-            onPress={() => handleDeletarLista(item.id)}
-          >
-            <Ionicons name="trash-outline" size={20} color={colors.danger} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.routeContainer, { backgroundColor: colors.background }]}>
-          <Text style={[styles.routeText, { color: colors.textMuted }]} numberOfLines={1}>{item.origem_nome}</Text>
-          <Ionicons name="arrow-forward" size={14} color={colors.textMuted} style={{ marginHorizontal: 4 }} />
-          <Text style={[styles.routeText, { color: colors.textMuted }]} numberOfLines={1}>{item.destino_nome}</Text>
-        </View>
-
-        <View style={styles.cardFooterInline}>
-          <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
-          <Text style={[styles.dateText, { color: colors.textMuted }]}>{formatFriendlyDate(item.data_criacao)}</Text>
-        </View>
-      </View>
     );
   };
 
@@ -379,17 +347,45 @@ export function ListasCriadas() {
       ) : (
         <>
           {/* 1. CARROSSEL (Topo - Vermelho) */}
-          <View style={styles.carouselContainer}>
+          <View style={[styles.carouselContainer, expandedListaId !== null && styles.carouselContainerExpanded]}>
             <FlatList
               ref={flatListRef}
               data={listas}
               horizontal
               keyExtractor={(item) => item.id.toString()}
-              renderItem={renderListaCard}
+              renderItem={({ item, index }) => (
+                <ListaCard
+                  item={item}
+                  index={index}
+                  cardWidth={CARD_WIDTH}
+                  isSelected={item.id === selectedListaId}
+                  isExpanded={item.id === expandedListaId}
+                  estaCarregando={item.id === idListaCarregando}
+                  onToggleDetails={() => toggleListaDetalhes(item.id)}
+                  onDelete={() => handleDeletarLista(item.id)}
+                />
+              )}
+              ListFooterComponent={
+                <NovaCargaCard
+                  cardWidth={CARD_WIDTH}
+                  onPress={() => navigation.navigate('NovaLista')}
+                />
+              }
               showsHorizontalScrollIndicator={false}
               snapToInterval={SNAP_INTERVAL}
               decelerationRate="fast"
               onMomentumScrollEnd={onScrollEnd}
+              getItemLayout={(_, index) => ({
+                length: SNAP_INTERVAL,
+                offset: SNAP_INTERVAL * index,
+                index,
+              })}
+              onScrollToIndexFailed={({ index }) => {
+                flatListRef.current?.scrollToOffset({
+                  offset: SNAP_INTERVAL * index,
+                  animated: false,
+                });
+              }}
               contentContainerStyle={{ paddingHorizontal: (SCREEN_WIDTH - CARD_WIDTH) / 2 }}
             />
           </View>
@@ -516,30 +512,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   // 1. CARROSSEL
   carouselContainer: { paddingVertical: 10, height: 165 },
-  card: {
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    justifyContent: 'space-between',
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-      android: { elevation: 3 },
-    })
-  },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardTitle: { fontSize: 16, fontWeight: 'bold' },
-  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  badgeRascunho: { backgroundColor: '#FEF3C7' },
-  badgeConsolidada: { backgroundColor: '#D1FAE5' },
-  badgeExportada: { backgroundColor: '#DBEAFE' },
-  badgeText: { fontSize: 10, fontWeight: 'bold', color: '#1F2937' },
-  deleteBtn: { padding: 4 },
-  routeContainer: { flexDirection: 'row', alignItems: 'center', padding: 8, borderRadius: 8, marginTop: 8 },
-  routeText: { fontSize: 12, fontWeight: '600', flex: 1 },
-  cardFooterInline: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
-  dateText: { fontSize: 10 },
+  carouselContainerExpanded: { height: 280 },
 
   // 2. PAINEL DE OPERAÇÃO
   itemsSection: { flex: 1, paddingHorizontal: 20, marginTop: 5 },

@@ -5,13 +5,8 @@ export interface ListaHist {
   id: number;
   status: StatusLista;
   data_criacao: string;
-  origem_nome: string;
-  destino_nome: string;
-}
-
-export interface ListaDetalhes {
-  id: number;
-  status: StatusLista;
+  origem_codigo: string;
+  destino_codigo: string;
   origem_nome: string;
   destino_nome: string;
 }
@@ -43,23 +38,14 @@ export class ListaModel {
   /** Puxa histórico reverso de todas as listas criadas */
   static async getHistorico(db: SQLiteDatabase): Promise<ListaHist[]> {
     return await db.getAllAsync<ListaHist>(`
-      SELECT l.id, l.status, l.data_criacao, o.nome as origem_nome, e.nome as destino_nome 
+      SELECT l.id, l.status, l.data_criacao,
+             o.codigo AS origem_codigo, e.codigo_deposito AS destino_codigo,
+             o.nome AS origem_nome, e.nome AS destino_nome
       FROM listas l
       JOIN depositos_origem o ON l.origem_id = o.id
       JOIN escolas e ON l.escola_id = e.id
       ORDER BY l.id DESC
     `);
-  }
-
-  /** Carrega os detalhes do cabeçalho da lista (Origem -> Destino) */
-  static async getDetalhes(db: SQLiteDatabase, listaId: number): Promise<ListaDetalhes | null> {
-    return await db.getFirstAsync<ListaDetalhes>(`
-      SELECT l.id, l.status, o.nome as origem_nome, e.nome as destino_nome
-      FROM listas l
-      JOIN depositos_origem o ON l.origem_id = o.id
-      JOIN escolas e ON l.escola_id = e.id
-      WHERE l.id = ?
-    `, [listaId]);
   }
 
 }

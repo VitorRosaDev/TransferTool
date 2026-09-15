@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { ActivityIndicator, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ListaModel } from '../models/ListaModel';
 import type { Suggestion } from '../models/ListaModel';
 import { ListaRanchoService } from '../models/ListaRanchoService';
 import { useTheme } from '../contexts/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../components/AppHeader';
 
 export function NovaLista() {
@@ -31,6 +31,13 @@ export function NovaLista() {
   // Estados de foco para pré-visualização ao tocar
   const [isFocusedOrigem, setIsFocusedOrigem] = useState(false);
   const [isFocusedDestino, setIsFocusedDestino] = useState(false);
+  const [criandoLista, setCriandoLista] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setCriandoLista(false);
+    }, [])
+  );
 
   // Busca Reativa de Origens (com preview instantâneo ao focar)
   useEffect(() => {
@@ -119,18 +126,20 @@ export function NovaLista() {
 
   // Confirmação final e gravação de rascunho
   const handleConfirm = async () => {
-    if (!origem || !destino) return;
+    if (!origem || !destino || criandoLista) return;
 
+    setCriandoLista(true);
     try {
-      const novaListaId = await ListaRanchoService.criarRascunho(db, origem.id, destino.id);
+      await ListaRanchoService.criarRascunho(db, origem.id, destino.id);
       setOrigem(null);
       setDestino(null);
       setSearchQueryOrigem('');
       setSearchQueryDestino('');
-      navigation.navigate('ListasCriadas', { listaId: novaListaId });
+      navigation.navigate('ListasCriadas');
     } catch (e) {
       console.error("Erro ao iniciar lista:", e);
       Alert.alert("Erro", "Não foi possível criar a lista de rancho no banco de dados.");
+      setCriandoLista(false);
     }
   };
 
@@ -288,11 +297,17 @@ export function NovaLista() {
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity 
           style={[styles.btnContinue, (!origem || !destino) ? styles.btnDisabled : { backgroundColor: colors.primary }]}
-          disabled={!origem || !destino}
+          disabled={!origem || !destino || criandoLista}
           onPress={handleConfirm}
         >
-          <Text style={styles.btnContinueText}>Iniciar Carga</Text>
-          <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
+          {criandoLista ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <>
+              <Text style={styles.btnContinueText}>Iniciar Carga</Text>
+              <Ionicons name="checkmark-circle-outline" size={24} color="#FFF" />
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
