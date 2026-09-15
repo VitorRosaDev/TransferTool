@@ -37,7 +37,14 @@ export function ListaCard({ item, index, isSelected, isExpanded, estaCarregando,
         styles.card,
         { width: cardWidth },
         { backgroundColor: colors.card },
-        isSelected && { borderColor: colors.primary, borderWidth: 2, elevation: 4 },
+        isSelected && {
+          borderColor: item.status === 'Consolidada'
+            ? colors.success
+            : item.status === 'Exportada'
+              ? colors.info
+              : colors.warning,
+          borderWidth: 2, elevation: 4
+        },
       ]}
     >
       <View style={styles.cardHeader}>

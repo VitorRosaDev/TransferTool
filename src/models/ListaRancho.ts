@@ -3,6 +3,7 @@ import type { ItemRancho, IListaRanchoData, PayloadRPA } from './interfaces';
 import { RascunhoState } from './states/RascunhoState';
 import { ConsolidadaState } from './states/ConsolidadaState';
 import { ExportadaState } from './states/ExportadaState';
+import { ValidacaoItemError } from './errors';
 
 export class ListaRancho {
   private state: IRanchoState;

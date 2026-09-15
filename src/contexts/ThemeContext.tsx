@@ -10,6 +10,8 @@ export type ThemeColors = {
   primary: string;
   danger: string;
   success: string;
+  warning: string;
+  info: string;
   headerBg: string;
 };
 
@@ -31,6 +33,8 @@ const lightTheme: ThemeColors = {
   primary: '#2563EB',
   danger: '#EF4444',
   success: '#10B981',
+  warning: '#B45309',
+  info: '#2563EB',
   headerBg: '#2563EB',
 };
 
@@ -43,6 +47,8 @@ const darkTheme: ThemeColors = {
   primary: '#2563EB',
   danger: '#F4212E',
   success: '#00BA7C',
+  warning: '#FBBF24',
+  info: '#60A5FA',
   headerBg: '#000000',
 };
 
