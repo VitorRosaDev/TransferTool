@@ -10,10 +10,12 @@ import { ItemModel } from '../models/ItemModel';
 import type { ItemCarrinho, ProdutoCatalogo } from '../models/ItemModel';
 import { useTheme } from '../contexts/ThemeContext';
 import { ListaRanchoService } from '../models/ListaRanchoService';
+import { ValidacaoItemError } from '../models/errors';
 import { AppHeader } from '../components/AppHeader';
 import { ListaCard } from '../components/ListaCard';
 import { NovaCargaCard } from '../components/NovaCargaCard';
 import { encontrarListaMaisRecente, ordenarListas, reconciliarListaSelecionada } from '../models/ListaOrdenacao';
+import { normalizeSearch } from '../utils/stringUtils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
@@ -46,6 +48,7 @@ export function ListasCriadas() {
   const idCarregamentoItensRef = useRef<number | null>(null);
   const versaoCarregamentoListasRef = useRef(0);
   const idListaSelecionadaRef = useRef<number | null>(null);
+  const searchVersionRef = useRef(0);
 
   useEffect(() => {
     idListaSelecionadaRef.current = selectedListaId;
@@ -112,14 +115,18 @@ export function ListasCriadas() {
   // Busca dinâmica de itens (Scanner Logic)
   useEffect(() => {
     async function fetchItems() {
+      const currentVersion = ++searchVersionRef.current;
+
       if (searchQuery.trim().length === 0) {
         setSuggestions([]);
         return;
       }
       try {
-        const queryUnaccented = searchQuery.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const queryUnaccented = normalizeSearch(searchQuery);
         const result = await ItemModel.buscarCatalogo(db, searchQuery, queryUnaccented);
-        setSuggestions(result);
+        if (currentVersion === searchVersionRef.current) {
+          setSuggestions(result);
+        }
       } catch (e) {
         console.error(e);
       }
@@ -203,6 +210,7 @@ export function ListasCriadas() {
         carregarListas(false);
       } catch (error) {
         console.error(error);
+        Alert.alert("Erro ao Consolidar", error instanceof ValidacaoItemError ? error.message : "Não foi possível consolidar esta lista.");
       }
     };
 
@@ -268,8 +276,8 @@ export function ListasCriadas() {
   const handleSalvarItem = async () => {
     if (!itemAtivo || !quantidade || !selectedListaId) return;
     try {
-      const qtdNum = parseFloat(quantidade);
-      if (!Number.isFinite(qtdNum) || qtdNum <= 0) {
+      const qtdNum = Number(quantidade.trim());
+      if (isNaN(qtdNum) || qtdNum <= 0) {
         Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
         return;
       }

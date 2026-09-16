@@ -8,6 +8,7 @@ import { ListaRanchoService } from '../models/ListaRanchoService';
 import { useTheme } from '../contexts/ThemeContext';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AppHeader } from '../components/AppHeader';
+import { normalizeSearch } from '../utils/stringUtils';
 
 export function NovaLista() {
   const db = useSQLiteContext();
@@ -15,6 +16,8 @@ export function NovaLista() {
   const { colors } = useTheme();
 
   const scrollViewRef = useRef<ScrollView>(null);
+  const origemSearchVersionRef = useRef(0);
+  const destinoSearchVersionRef = useRef(0);
 
   // Seleções de Origem e Destino
   const [origem, setOrigem] = useState<Suggestion | null>(null);
@@ -42,14 +45,17 @@ export function NovaLista() {
   // Busca Reativa de Origens (com preview instantâneo ao focar)
   useEffect(() => {
     async function fetchOrigemSuggestions() {
+      const currentVersion = ++origemSearchVersionRef.current;
       if (!isFocusedOrigem && searchQueryOrigem.trim().length === 0) {
         setSuggestionsOrigem([]);
         return;
       }
       try {
-        const queryUnaccented = searchQueryOrigem.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const queryUnaccented = normalizeSearch(searchQueryOrigem);
         const result = await ListaModel.buscarOrigens(db, searchQueryOrigem, queryUnaccented);
-        setSuggestionsOrigem(result);
+        if (currentVersion === origemSearchVersionRef.current) {
+          setSuggestionsOrigem(result);
+        }
       } catch (e) {
         console.error("Erro ao buscar origens:", e);
       }
@@ -65,14 +71,17 @@ export function NovaLista() {
   // Busca Reativa de Destinos (com preview instantâneo ao focar)
   useEffect(() => {
     async function fetchDestinoSuggestions() {
+      const currentVersion = ++destinoSearchVersionRef.current;
       if (!isFocusedDestino && searchQueryDestino.trim().length === 0) {
         setSuggestionsDestino([]);
         return;
       }
       try {
-        const queryUnaccented = searchQueryDestino.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const queryUnaccented = normalizeSearch(searchQueryDestino);
         const result = await ListaModel.buscarDestinos(db, searchQueryDestino, queryUnaccented);
-        setSuggestionsDestino(result);
+        if (currentVersion === destinoSearchVersionRef.current) {
+          setSuggestionsDestino(result);
+        }
       } catch (e) {
         console.error("Erro ao buscar destinos:", e);
       }

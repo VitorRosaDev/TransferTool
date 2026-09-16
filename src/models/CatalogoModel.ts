@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { normalizeSearch } from '../utils/stringUtils';
 
 /**
  * Tipos de entidades gerenciáveis no catálogo
@@ -21,12 +22,7 @@ export interface ItemCatalogo {
  */
 export class CatalogoModel {
   
-  /**
-   * Remove acentos e normaliza para busca
-   */
-  private static normalizeSearch(str: string): string {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  }
+
 
   /**
    * Retorna a tabela correta para a categoria informada
@@ -72,22 +68,28 @@ export class CatalogoModel {
    * Adiciona um novo registro ao catálogo
    */
   static async adicionar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, codigo: string, nome: string): Promise<void> {
+    const codigoNormalizado = codigo.trim();
+    const nomeNormalizado = nome.trim();
+    if (!codigoNormalizado || !nomeNormalizado) {
+      throw new Error('Código e nome são obrigatórios.');
+    }
+
     const table = this.getTable(entidade);
     const cols = this.getColumnNames(entidade);
-    const nomeBusca = this.normalizeSearch(nome);
+    const nomeBusca = normalizeSearch(nomeNormalizado);
 
     const query = `
       INSERT INTO ${table} (${cols.code}, ${cols.name}, ${cols.search}, ativo) 
       VALUES (?, ?, ?, 1)
     `;
 
-    await db.runAsync(query, [codigo, nome, nomeBusca]);
+    await db.runAsync(query, [codigoNormalizado, nomeNormalizado, nomeBusca]);
   }
 
   /**
    * Altera o status (ativo/inativo) de múltiplos itens em lote
    */
-  static async alterarStatusLote(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, ids: number[], novoStatus: number): Promise<void> {
+  static async alterarStatusLote(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, ids: number[], novoStatus: 0 | 1): Promise<void> {
     if (ids.length === 0) return;
 
     const table = this.getTable(entidade);
