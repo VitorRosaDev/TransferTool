@@ -42,7 +42,7 @@ export class CatalogoModel {
     switch (entidade) {
       case 'deposito': return { code: 'codigo', name: 'nome', search: 'nome_busca' };
       case 'escola': return { code: 'codigo_deposito', name: 'nome', search: 'nome_busca' };
-      case 'item': return { code: 'codigo', name: 'descricao', search: 'descricao_busca' };
+      case 'item': return { code: 'codigos_erp', name: 'descricao', search: 'descricao_busca' };
     }
   }
 
@@ -67,23 +67,56 @@ export class CatalogoModel {
   /**
    * Adiciona um novo registro ao catálogo
    */
-  static async adicionar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, codigo: string, nome: string): Promise<void> {
-    const codigoNormalizado = codigo.trim();
+  static async adicionar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, codigo: string | string[], nome: string): Promise<void> {
     const nomeNormalizado = nome.trim();
-    if (!codigoNormalizado || !nomeNormalizado) {
+    if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
       throw new Error('Código e nome são obrigatórios.');
     }
 
     const table = this.getTable(entidade);
     const cols = this.getColumnNames(entidade);
     const nomeBusca = normalizeSearch(nomeNormalizado);
+    
+    let codigoFormatado = Array.isArray(codigo) ? JSON.stringify(codigo.map(c => c.trim())) : codigo.trim();
+
+    if (entidade === 'item' && !Array.isArray(codigo)) {
+      codigoFormatado = JSON.stringify([codigo.trim()]);
+    }
 
     const query = `
       INSERT INTO ${table} (${cols.code}, ${cols.name}, ${cols.search}, ativo) 
       VALUES (?, ?, ?, 1)
     `;
 
-    await db.runAsync(query, [codigoNormalizado, nomeNormalizado, nomeBusca]);
+    await db.runAsync(query, [codigoFormatado, nomeNormalizado, nomeBusca]);
+  }
+
+  /**
+   * Edita um registro existente
+   */
+  static async editar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, id: number, codigo: string | string[], nome: string): Promise<void> {
+    const nomeNormalizado = nome.trim();
+    if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
+      throw new Error('Código e nome são obrigatórios.');
+    }
+
+    const table = this.getTable(entidade);
+    const cols = this.getColumnNames(entidade);
+    const nomeBusca = normalizeSearch(nomeNormalizado);
+    
+    let codigoFormatado = Array.isArray(codigo) ? JSON.stringify(codigo.map(c => c.trim())) : codigo.trim();
+
+    if (entidade === 'item' && !Array.isArray(codigo)) {
+      codigoFormatado = JSON.stringify([codigo.trim()]);
+    }
+
+    const query = `
+      UPDATE ${table} 
+      SET ${cols.code} = ?, ${cols.name} = ?, ${cols.search} = ? 
+      WHERE id = ?
+    `;
+
+    await db.runAsync(query, [codigoFormatado, nomeNormalizado, nomeBusca, id]);
   }
 
   /**

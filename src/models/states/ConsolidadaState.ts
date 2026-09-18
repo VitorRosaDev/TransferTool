@@ -15,11 +15,11 @@ export class ConsolidadaState implements IRanchoState {
     throw new OperacaoBloqueadaError('adicionarItem', 'Consolidada');
   }
 
-  removerItem(codigoItem: string): void {
+  removerItem(produtoId: number): void {
     throw new OperacaoBloqueadaError('removerItem', 'Consolidada');
   }
 
-  alterarQuantidade(codigoItem: string, quantidade: number): void {
+  alterarQuantidade(produtoId: number, quantidade: number): void {
     throw new OperacaoBloqueadaError('alterarQuantidade', 'Consolidada');
   }
 
@@ -46,7 +46,7 @@ export class ConsolidadaState implements IRanchoState {
       codigo_origem: this.contexto.getData().codigo_origem,
       codigo_destino: this.contexto.getData().codigo_destino,
       itens: this.contexto.getData().itens.map(item => ({
-        codigo: item.codigo_item,
+        codigos: item.codigos_erp,
         quantidade: item.quantidade
       }))
     };

@@ -265,7 +265,7 @@ export function ListasCriadas() {
   const openModalEdit = (item: ItemCarrinho) => {
     setItemAtivo({
       id: item.produto_id,
-      codigo: item.codigo,
+      codigos_erp: item.codigos_erp,
       descricao: item.descricao
     });
     setEditandoItemId(item.id);
@@ -306,7 +306,7 @@ export function ListasCriadas() {
       >
         <View style={{ flex: 1 }}>
           <Text style={[styles.itemTitle, { color: colors.text }]}>{item.descricao}</Text>
-          <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Código: {item.codigo}</Text>
+          <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Código(s): {(() => { try { return JSON.parse(item.codigos_erp).join(', ') } catch { return item.codigos_erp } })()}</Text>
         </View>
         <View style={[styles.qtdContainer, { backgroundColor: colors.background }]}>
           <Text style={[styles.qtdText, { color: colors.primary }]}>{item.quantidade}</Text>
@@ -426,7 +426,7 @@ export function ListasCriadas() {
                           <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
                             <View style={{ flex: 1 }}>
                               <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
-                              <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód: {s.codigo}</Text>
+                              <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód(s): {(() => { try { return JSON.parse(s.codigos_erp).join(', ') } catch { return s.codigos_erp } })()}</Text>
                             </View>
                             <Ionicons name="add-circle" size={24} color={colors.primary} />
                           </TouchableOpacity>
@@ -490,7 +490,7 @@ export function ListasCriadas() {
             </View>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>{itemAtivo?.descricao}</Text>
-              <Text style={{ color: colors.textMuted }}>Código: {itemAtivo?.codigo}</Text>
+              <Text style={{ color: colors.textMuted }}>Código(s): {(() => { try { return JSON.parse(itemAtivo?.codigos_erp || '[]').join(', ') } catch { return itemAtivo?.codigos_erp } })()}</Text>
             </View>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text }]}>Quantidade *</Text>

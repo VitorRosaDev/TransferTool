@@ -15,7 +15,7 @@ export class RascunhoState implements IRanchoState {
       throw new ValidacaoItemError("A quantidade do item deve ser maior que zero.");
     }
     
-    const index = this.contexto.getData().itens.findIndex(i => i.codigo_item === item.codigo_item);
+    const index = this.contexto.getData().itens.findIndex(i => i.produto_id === item.produto_id);
     if (index >= 0) {
       this.contexto.getData().itens[index].quantidade += item.quantidade;
     } else {
@@ -23,19 +23,19 @@ export class RascunhoState implements IRanchoState {
     }
   }
 
-  removerItem(codigoItem: string): void {
-    this.contexto.getData().itens = this.contexto.getData().itens.filter(i => i.codigo_item !== codigoItem);
+  removerItem(produtoId: number): void {
+    this.contexto.getData().itens = this.contexto.getData().itens.filter(i => i.produto_id !== produtoId);
   }
 
-  alterarQuantidade(codigoItem: string, quantidade: number): void {
+  alterarQuantidade(produtoId: number, quantidade: number): void {
     if (!Number.isFinite(quantidade)) {
       throw new ValidacaoItemError("A quantidade do item deve ser um número válido.");
     }
     if (quantidade <= 0) {
-      this.removerItem(codigoItem);
+      this.removerItem(produtoId);
       return;
     }
-    const item = this.contexto.getData().itens.find(i => i.codigo_item === codigoItem);
+    const item = this.contexto.getData().itens.find(i => i.produto_id === produtoId);
     if (item) {
       item.quantidade = quantidade;
     } else {

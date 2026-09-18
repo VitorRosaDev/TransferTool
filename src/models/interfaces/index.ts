@@ -1,6 +1,7 @@
 export interface ItemRancho {
   id?: number;
-  codigo_item: string;
+  produto_id: number;
+  codigos_erp: string[];
   descricao?: string;
   quantidade: number;
 }
@@ -24,7 +25,7 @@ export interface PayloadRPA {
   codigo_origem: string;
   codigo_destino: string;
   itens: Array<{
-    codigo: string;
+    codigos: string[];
     quantidade: number;
   }>;
 }

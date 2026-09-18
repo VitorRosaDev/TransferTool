@@ -22,7 +22,7 @@ describe('ListaRanchoService', () => {
       status: 'Rascunho',
     });
     (mockDb.getAllAsync as jest.Mock).mockResolvedValue([
-      { codigo_item: 'ITEM-01', quantidade: 10 },
+      { produto_id: 1, codigos_erp: '["ITEM-01"]', quantidade: 10 },
     ]);
     (mockDb.runAsync as jest.Mock).mockResolvedValue({ lastInsertRowId: 7 });
   });
@@ -86,7 +86,7 @@ describe('ListaRanchoService', () => {
         { id: 7, status: 'Consolidada' },
         { id: 8, status: 'Exportada' },
       ])
-      .mockResolvedValue([{ codigo_item: 'ITEM-01', quantidade: 10 }]);
+      .mockResolvedValue([{ produto_id: 1, codigos_erp: '["ITEM-01"]', quantidade: 10 }]);
     (mockDb.getFirstAsync as jest.Mock)
       .mockResolvedValueOnce({
         id: 7,

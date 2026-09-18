@@ -30,7 +30,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
 
     CREATE TABLE IF NOT EXISTS itens (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      codigo TEXT NOT NULL UNIQUE,
+      codigos_erp TEXT NOT NULL CHECK(json_valid(codigos_erp) AND json_array_length(codigos_erp) > 0),
       descricao TEXT NOT NULL,
       descricao_busca TEXT NOT NULL,
       ativo INTEGER NOT NULL DEFAULT 1
@@ -122,8 +122,8 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase) {
   // 3. Popular Itens (Catálogo sem quantidade)
   for (const item of SEED_ITENS) {
     await db.runAsync(
-      'INSERT INTO itens (codigo, descricao, descricao_busca) VALUES (?, ?, ?)',
-      [item.codigo, item.descricao, removeAcentos(item.descricao)]
+      'INSERT INTO itens (codigos_erp, descricao, descricao_busca) VALUES (?, ?, ?)',
+      [JSON.stringify([item.codigo]), item.descricao, removeAcentos(item.descricao)]
     );
   }
   

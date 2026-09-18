@@ -34,12 +34,12 @@ export class ListaRancho {
     this.state.adicionarItem(item);
   }
 
-  public removerItem(codigoItem: string): void {
-    this.state.removerItem(codigoItem);
+  public removerItem(produtoId: number): void {
+    this.state.removerItem(produtoId);
   }
 
-  public alterarQuantidade(codigoItem: string, quantidade: number): void {
-    this.state.alterarQuantidade(codigoItem, quantidade);
+  public alterarQuantidade(produtoId: number, quantidade: number): void {
+    this.state.alterarQuantidade(produtoId, quantidade);
   }
 
   public definirOrigemDestino(origemId: number, codigoOrigem: string, escolaId: number, codigoDestino: string): void {

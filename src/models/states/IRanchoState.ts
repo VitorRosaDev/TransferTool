@@ -9,8 +9,8 @@ export interface IRanchoState {
   getNomeEstado(): 'Rascunho' | 'Consolidada' | 'Exportada';
   
   adicionarItem(item: ItemRancho): void;
-  removerItem(codigoItem: string): void;
-  alterarQuantidade(codigoItem: string, quantidade: number): void;
+  removerItem(produtoId: number): void;
+  alterarQuantidade(produtoId: number, quantidade: number): void;
   definirOrigemDestino(origemId: number, codigoOrigem: string, escolaId: number, codigoDestino: string): void;
   
   consolidar(): void;

@@ -40,7 +40,7 @@ describe('CatalogoModel', () => {
       
       const query = (mockDb.runAsync as jest.Mock).mock.calls[0][0];
       expect(query).toMatch(/INSERT\s+INTO\s+itens/);
-      expect((mockDb.runAsync as jest.Mock).mock.calls[0][1]).toEqual(['COD-01', 'Arroz Agulhinha', 'arroz agulhinha']);
+      expect((mockDb.runAsync as jest.Mock).mock.calls[0][1]).toEqual(['["COD-01"]', 'Arroz Agulhinha', 'arroz agulhinha']);
     });
 
     it('deve normalizar nomes com acentos corretamente', async () => {

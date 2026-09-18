@@ -15,7 +15,8 @@ interface ListaPersistida {
 }
 
 interface ItemPersistido {
-  codigo_item: string;
+  produto_id: number;
+  codigos_erp: string;
   quantidade: number;
 }
 
@@ -59,14 +60,14 @@ export class ListaRanchoService {
 
   static async adicionarItem(db: SQLiteDatabase, listaId: number, produtoId: number, quantidade: number): Promise<void> {
     await db.withExclusiveTransactionAsync(async (txn) => {
-      const produto = await txn.getFirstAsync<{ codigo: string }>(
-        'SELECT codigo FROM itens WHERE id = ? AND ativo = 1',
+      const produto = await txn.getFirstAsync<{ id: number, codigos_erp: string }>(
+        'SELECT id, codigos_erp FROM itens WHERE id = ? AND ativo = 1',
         [produtoId]
       );
       if (!produto) throw new Error('Produto não encontrado ou inativo.');
 
       const lista = await this.reidratar(txn, listaId);
-      lista.adicionarItem({ codigo_item: produto.codigo, quantidade });
+      lista.adicionarItem({ produto_id: produto.id, codigos_erp: JSON.parse(produto.codigos_erp), quantidade });
       await this.persistirItens(txn, lista);
     });
   }
@@ -75,7 +76,7 @@ export class ListaRanchoService {
     await db.withExclusiveTransactionAsync(async (txn) => {
       const item = await this.buscarItem(txn, idItemLista);
       const lista = await this.reidratar(txn, item.lista_id);
-      lista.alterarQuantidade(item.codigo, quantidade);
+      lista.alterarQuantidade(item.produto_id, quantidade);
       await this.persistirItens(txn, lista);
     });
   }
@@ -84,7 +85,7 @@ export class ListaRanchoService {
     await db.withExclusiveTransactionAsync(async (txn) => {
       const item = await this.buscarItem(txn, idItemLista);
       const lista = await this.reidratar(txn, item.lista_id);
-      lista.removerItem(item.codigo);
+      lista.removerItem(item.produto_id);
       await this.persistirItens(txn, lista);
     });
   }
@@ -173,19 +174,26 @@ export class ListaRanchoService {
     if (!cabecalho) throw new Error('Lista não encontrada.');
 
     const itens = await db.getAllAsync<ItemPersistido>(`
-      SELECT i.codigo AS codigo_item, SUM(il.quantidade) AS quantidade
+      SELECT i.id AS produto_id, i.codigos_erp, SUM(il.quantidade) AS quantidade
       FROM itens_lista il
       JOIN itens i ON i.id = il.produto_id
       WHERE il.lista_id = ?
-      GROUP BY i.codigo
+      GROUP BY i.id
     `, [listaId]);
 
-    return new ListaRancho({ ...cabecalho, itens });
+    return new ListaRancho({ 
+      ...cabecalho, 
+      itens: itens.map(i => ({
+        produto_id: i.produto_id,
+        codigos_erp: JSON.parse(i.codigos_erp),
+        quantidade: i.quantidade
+      }))
+    });
   }
 
-  private static async buscarItem(db: SQLiteDatabase, idItemLista: number): Promise<{ lista_id: number; codigo: string }> {
-    const item = await db.getFirstAsync<{ lista_id: number; codigo: string }>(`
-      SELECT il.lista_id, i.codigo
+  private static async buscarItem(db: SQLiteDatabase, idItemLista: number): Promise<{ lista_id: number; produto_id: number }> {
+    const item = await db.getFirstAsync<{ lista_id: number; produto_id: number }>(`
+      SELECT il.lista_id, i.id AS produto_id
       FROM itens_lista il
       JOIN itens i ON i.id = il.produto_id
       WHERE il.id = ?
@@ -200,11 +208,9 @@ export class ListaRanchoService {
 
     await db.runAsync('DELETE FROM itens_lista WHERE lista_id = ?', [listaId]);
     for (const item of lista.getData().itens) {
-      const produto = await db.getFirstAsync<{ id: number }>('SELECT id FROM itens WHERE codigo = ?', [item.codigo_item]);
-      if (!produto) throw new Error(`Produto ${item.codigo_item} não encontrado.`);
       await db.runAsync(
         'INSERT INTO itens_lista (lista_id, produto_id, quantidade) VALUES (?, ?, ?)',
-        [listaId, produto.id, item.quantidade]
+        [listaId, item.produto_id, item.quantidade]
       );
     }
   }

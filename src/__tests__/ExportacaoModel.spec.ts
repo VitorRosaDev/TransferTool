@@ -12,8 +12,8 @@ describe('ExportacaoModel', () => {
       data_criacao: '2026-01-01T10:00:00Z',
       status: 'Consolidada',
       itens: [
-        { codigo_item: 'PROD-01', quantidade: 100 },
-        { codigo_item: 'PROD-02', quantidade: 50 },
+        { produto_id: 1, codigos_erp: ['PROD-01'], quantidade: 100 },
+        { produto_id: 2, codigos_erp: ['PROD-02'], quantidade: 50 },
       ],
     });
 
@@ -23,8 +23,8 @@ describe('ExportacaoModel', () => {
     expect(payload.codigo_origem).toBe('DEP-TEST');
     expect(payload.codigo_destino).toBe('ESC-TEST');
     expect(payload.itens.length).toBe(2);
-    expect(payload.itens[0].codigo).toBe('PROD-01');
-    expect(payload.itens[1].codigo).toBe('PROD-02');
+    expect(payload.itens[0].codigos).toEqual(['PROD-01']);
+    expect(payload.itens[1].codigos).toEqual(['PROD-02']);
   });
 
   it('deve formatar data_geracao como string ISO', () => {
@@ -36,7 +36,7 @@ describe('ExportacaoModel', () => {
       codigo_destino: 'B',
       data_criacao: '',
       status: 'Consolidada',
-      itens: [{ codigo_item: 'ITEM-01', quantidade: 1 }],
+      itens: [{ produto_id: 1, codigos_erp: ['ITEM-01'], quantidade: 1 }],
     });
 
     const payload = lista.gerarPayload();

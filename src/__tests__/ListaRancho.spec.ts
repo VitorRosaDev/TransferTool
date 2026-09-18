@@ -13,7 +13,7 @@ describe('Padrão State: ListaRancho', () => {
 
   it('deve permitir adicionar item no estado Rascunho', () => {
     const lista = new ListaRancho();
-    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+    lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 });
     expect(lista.getData().itens.length).toBe(1);
     expect(lista.getData().itens[0].quantidade).toBe(10);
   });
@@ -21,15 +21,15 @@ describe('Padrão State: ListaRancho', () => {
   it('deve rejeitar quantidade não finita ao adicionar item', () => {
     const lista = new ListaRancho();
 
-    expect(() => lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: Number.NaN }))
+    expect(() => lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: Number.NaN }))
       .toThrow('A quantidade do item deve ser maior que zero');
   });
 
   it('deve rejeitar quantidade não finita ao alterar item', () => {
     const lista = new ListaRancho();
-    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+    lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 });
 
-    expect(() => lista.alterarQuantidade('ALIM-001', Number.POSITIVE_INFINITY))
+    expect(() => lista.alterarQuantidade(1, Number.POSITIVE_INFINITY))
       .toThrow('A quantidade do item deve ser um número válido');
   });
 
@@ -44,7 +44,7 @@ describe('Padrão State: ListaRancho', () => {
   it('deve transitar para Consolidada quando regras forem atendidas', () => {
     const lista = new ListaRancho();
     lista.definirOrigemDestino(1, 'DEP-01', 2, 'ESC-01');
-    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+    lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 });
     
     lista.consolidar();
     expect(lista.getState()).toBeInstanceOf(ConsolidadaState);
@@ -58,13 +58,13 @@ describe('Padrão State: ListaRancho', () => {
       codigo_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
-      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Consolidada',
       data_criacao: new Date().toISOString(),
     });
 
     expect(() => {
-      lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+      lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 });
     }).toThrow(OperacaoBloqueadaError);
   });
 
@@ -75,7 +75,7 @@ describe('Padrão State: ListaRancho', () => {
       codigo_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
-      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Consolidada',
       data_criacao: new Date().toISOString(),
     });
@@ -91,7 +91,7 @@ describe('Padrão State: ListaRancho', () => {
       codigo_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
-      itens: [{ codigo_item: 'ALIM-001', quantidade: 10 }],
+      itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Exportada',
       data_criacao: new Date().toISOString(),
     });
@@ -105,7 +105,7 @@ describe('Padrão State: ListaRancho', () => {
   it('deve gerar o Payload RPA exato ao Exportar e transitar para estado final', () => {
     const lista = new ListaRancho();
     lista.definirOrigemDestino(1, 'DEP-01', 2, 'ESC-01');
-    lista.adicionarItem({ codigo_item: 'ALIM-001', quantidade: 10 });
+    lista.adicionarItem({ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 });
     lista.consolidar();
 
     const payload = lista.exportar();

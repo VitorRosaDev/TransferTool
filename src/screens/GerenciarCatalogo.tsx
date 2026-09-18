@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { CatalogoModel } from '../models/CatalogoModel';
 import type { ItemCatalogo } from '../models/CatalogoModel';
 
-type ActionType = 'adicionar' | 'remover' | 'reativar';
+type ActionType = 'adicionar' | 'editar' | 'remover' | 'reativar';
 type CategoryType = 'deposito' | 'escola' | 'item';
 
 export function GerenciarCatalogo() {
@@ -91,6 +91,27 @@ export function GerenciarCatalogo() {
         {action === 'adicionar' && renderCategories()}
       </View>
 
+      {/* CARD 2: EDITAR */}
+      <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
+        <TouchableOpacity 
+          style={styles.menuCardHeader}
+          onPress={() => toggleAction('editar')}
+        >
+          <Ionicons name="pencil-outline" size={32} color="#F59E0B" />
+          <View style={styles.menuTextContainer}>
+            <Text style={[styles.menuTitle, { color: colors.text }]}>Editar Existente</Text>
+            <Text style={[styles.menuDesc, { color: colors.textMuted }]}>Alterar depósito, escola ou item</Text>
+          </View>
+          <Ionicons 
+            name={action === 'editar' ? "chevron-down" : "chevron-forward"} 
+            size={20} 
+            color={colors.textMuted} 
+          />
+        </TouchableOpacity>
+
+        {action === 'editar' && renderCategories()}
+      </View>
+
       {/* CARD 2: REMOVER */}
       <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
         <TouchableOpacity 
@@ -136,43 +157,132 @@ export function GerenciarCatalogo() {
   );
 
   const [codigo, setCodigo] = useState('');
+  const [codigosItem, setCodigosItem] = useState<string[]>([]);
+  const [novoCodigoItem, setNovoCodigoItem] = useState('');
   const [nome, setNome] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
 
-  const handleAdd = async () => {
-    if (!codigo.trim() || !nome.trim()) {
-      Alert.alert('Erro', 'Preencha todos os campos.');
-      return;
+  const resetForm = () => {
+    setCodigo('');
+    setCodigosItem([]);
+    setNovoCodigoItem('');
+    setNome('');
+    setEditId(null);
+  };
+
+  const handleSave = async () => {
+    if (category === 'item') {
+      if (codigosItem.length === 0 || !nome.trim()) {
+        Alert.alert('Erro', 'Preencha a descrição e adicione pelo menos um código.');
+        return;
+      }
+    } else {
+      if (!codigo.trim() || !nome.trim()) {
+        Alert.alert('Erro', 'Preencha todos os campos.');
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      await CatalogoModel.adicionar(db, category!, codigo.trim(), nome.trim());
-      Alert.alert('Sucesso', `${category} adicionado com sucesso!`);
-      setCodigo('');
-      setNome('');
-      setStep(1);
+      const payloadCodigo = category === 'item' ? codigosItem : codigo.trim();
+      if (action === 'editar' && editId) {
+        await CatalogoModel.editar(db, category!, editId, payloadCodigo, nome.trim());
+        Alert.alert('Sucesso', `${category} atualizado com sucesso!`);
+      } else {
+        await CatalogoModel.adicionar(db, category!, payloadCodigo, nome.trim());
+        Alert.alert('Sucesso', `${category} adicionado com sucesso!`);
+      }
+      resetForm();
+      if (action === 'editar') {
+        fetchItems();
+        setStep(2); // volta pra listagem de edição
+      } else {
+        setStep(1);
+      }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Não foi possível adicionar. Verifique se o código já existe.');
+      Alert.alert('Erro', 'Não foi possível salvar. Verifique se o código já existe.');
     } finally {
       setLoading(false);
     }
   };
 
-  const renderAddForm = () => (
-    <View style={styles.form}>
-      <Text style={[styles.label, { color: colors.text }]}>Código Único</Text>
-      <TextInput 
-        style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
-        placeholder="Ex: DEP-01, ALIM-99..."
-        placeholderTextColor={colors.textMuted}
-        value={codigo}
-        onChangeText={setCodigo}
-        autoCapitalize="characters"
-      />
+  const addCodigoItem = () => {
+    const cod = novoCodigoItem.trim();
+    if (cod && !codigosItem.includes(cod)) {
+      setCodigosItem([...codigosItem, cod]);
+      setNovoCodigoItem('');
+    }
+  };
 
-      <Text style={[styles.label, { color: colors.text, marginTop: 20 }]}>Nome / Descrição</Text>
+  const removeCodigoItem = (codToRemove: string) => {
+    setCodigosItem(codigosItem.filter(c => c !== codToRemove));
+  };
+
+  const startEdit = (item: ItemCatalogo) => {
+    setEditId(item.id);
+    setNome(item.nome);
+    if (category === 'item') {
+      try {
+        const parsed = JSON.parse(item.codigo);
+        setCodigosItem(Array.isArray(parsed) ? parsed : [item.codigo]);
+      } catch {
+        setCodigosItem([item.codigo]);
+      }
+    } else {
+      setCodigo(item.codigo);
+    }
+    setStep(3); // Passo 3 será o formulário de edição
+  };
+
+  const renderForm = () => (
+    <View style={styles.form}>
+      {category === 'item' ? (
+        <View>
+          <Text style={[styles.label, { color: colors.text }]}>Códigos do Produto (ERP)</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <TextInput 
+              style={[styles.input, { flex: 1, backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+              placeholder="Ex: 2201..."
+              placeholderTextColor={colors.textMuted}
+              value={novoCodigoItem}
+              onChangeText={setNovoCodigoItem}
+              onSubmitEditing={addCodigoItem}
+            />
+            <TouchableOpacity style={[styles.submitButton, { marginTop: 0, marginLeft: 12, padding: 16, backgroundColor: colors.primary }]} onPress={addCodigoItem}>
+              <Ionicons name="add" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {codigosItem.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {codigosItem.map(cod => (
+                <View key={cod} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 6, paddingHorizontal: 12 }}>
+                  <Text style={{ color: colors.text, marginRight: 8 }}>{cod}</Text>
+                  <TouchableOpacity onPress={() => removeCodigoItem(cod)}>
+                    <Ionicons name="close-circle" size={20} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      ) : (
+        <View>
+          <Text style={[styles.label, { color: colors.text }]}>Código</Text>
+          <TextInput 
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+            placeholder="Ex: DEP-01, ALIM-99..."
+            placeholderTextColor={colors.textMuted}
+            value={codigo}
+            onChangeText={setCodigo}
+            autoCapitalize="characters"
+          />
+        </View>
+      )}
+
+      <Text style={[styles.label, { color: colors.text, marginTop: category === 'item' ? 0 : 20 }]}>Nome / Descrição</Text>
       <TextInput 
         style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
         placeholder="Descrição completa para busca..."
@@ -183,10 +293,10 @@ export function GerenciarCatalogo() {
 
       <TouchableOpacity 
         style={[styles.submitButton, { backgroundColor: colors.primary, opacity: loading ? 0.6 : 1 }]}
-        onPress={handleAdd}
+        onPress={handleSave}
         disabled={loading}
       >
-        <Text style={styles.submitButtonText}>{loading ? 'Salvando...' : 'Confirmar Adição'}</Text>
+        <Text style={styles.submitButtonText}>{loading ? 'Salvando...' : (action === 'editar' ? 'Confirmar Edição' : 'Confirmar Adição')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -198,7 +308,7 @@ export function GerenciarCatalogo() {
     if (!category || action === 'adicionar') return;
     setLoading(true);
     try {
-      const data = await CatalogoModel.listar(db, category, action === 'remover');
+      const data = await CatalogoModel.listar(db, category, action !== 'reativar');
       setItems(data);
     } catch (error) {
       console.error(error);
@@ -329,7 +439,7 @@ export function GerenciarCatalogo() {
           </View>
 
           {/* Botões de Ação em Lote */}
-          {items.length > 0 && (
+          {items.length > 0 && action !== 'editar' && (
             <View style={styles.batchActionsRow}>
               <TouchableOpacity 
                 style={[styles.batchHelperButton, { borderColor: colors.primary }]} 
@@ -350,7 +460,7 @@ export function GerenciarCatalogo() {
           )}
 
           {/* Resumo da Seleção e Itens Encontrados */}
-          {items.length > 0 && (
+          {items.length > 0 && action !== 'editar' && (
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryText, { color: colors.textMuted }]}>
                 Selecionados: <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{selectedIds.length}</Text>
@@ -377,23 +487,30 @@ export function GerenciarCatalogo() {
           {visibleItems.map(item => (
             <TouchableOpacity 
               key={item.id}
-              style={[styles.listItem, { backgroundColor: colors.card, borderColor: selectedIds.includes(item.id) ? colors.primary : 'transparent' }]}
-              onPress={() => toggleSelect(item.id)}
+              style={[styles.listItem, { backgroundColor: colors.card, borderColor: action !== 'editar' && selectedIds.includes(item.id) ? colors.primary : 'transparent' }]}
+              onPress={() => action === 'editar' ? startEdit(item) : toggleSelect(item.id)}
             >
-              <Ionicons 
-                name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"} 
-                size={24} 
-                color={selectedIds.includes(item.id) ? colors.primary : colors.textMuted} 
-              />
-              <View style={styles.listItemText}>
+              {action !== 'editar' && (
+                <Ionicons 
+                  name={selectedIds.includes(item.id) ? "checkbox" : "square-outline"} 
+                  size={24} 
+                  color={selectedIds.includes(item.id) ? colors.primary : colors.textMuted} 
+                />
+              )}
+              <View style={[styles.listItemText, { marginLeft: action === 'editar' ? 0 : 16 }]}>
                 <Text style={[styles.itemNome, { color: colors.text }]}>{item.nome}</Text>
-                <Text style={[styles.itemCodigo, { color: colors.textMuted }]}>{item.codigo}</Text>
+                <Text style={[styles.itemCodigo, { color: colors.textMuted }]}>{
+                   category === 'item' ? (() => { try { return JSON.parse(item.codigo).join(', ') } catch { return item.codigo } })() : item.codigo
+                }</Text>
               </View>
+              {action === 'editar' && (
+                <Ionicons name="pencil" size={20} color={colors.primary} />
+              )}
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        <View style={styles.batchFooterStatic}>
+        {action !== 'editar' && <View style={styles.batchFooterStatic}>
           <TouchableOpacity 
             style={[styles.submitButton, { backgroundColor: action === 'remover' ? '#EF4444' : '#10B981', opacity: loading || selectedIds.length === 0 ? 0.6 : 1, marginTop: 0 }]}
             onPress={handleBatchAction}
@@ -405,7 +522,7 @@ export function GerenciarCatalogo() {
                 : `Reativar Selecionados (${selectedIds.length})`}
             </Text>
           </TouchableOpacity>
-        </View>
+        </View>}
       </View>
     );
   };
@@ -413,17 +530,17 @@ export function GerenciarCatalogo() {
   const renderStep2 = () => (
     <View style={[styles.content, { flex: 1 }]}>
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => setStep(1)}>
+        <TouchableOpacity onPress={() => step === 3 ? setStep(2) : setStep(1)}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.stepTitle, { color: colors.text }]}>
-          {action === 'adicionar' ? 'Novo' : action === 'remover' ? 'Remover' : 'Reativar'} {category === 'item' ? 'Item' : category === 'deposito' ? 'Depósito' : 'Escola'}
+          {action === 'adicionar' ? 'Novo' : action === 'editar' ? 'Editar' : action === 'remover' ? 'Remover' : 'Reativar'} {category === 'item' ? 'Item' : category === 'deposito' ? 'Depósito' : 'Escola'}
         </Text>
       </View>
       
-      {action === 'adicionar' ? (
+      {(action === 'adicionar' || step === 3) ? (
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          {renderAddForm()}
+          {renderForm()}
         </ScrollView>
       ) : (
         renderBatchFlow()
