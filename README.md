@@ -142,6 +142,8 @@ O app gera um arquivo de exportação em JSON estritamente parametrizado apenas 
 
 O botão de exportação do Hub gera um único arquivo JSON em formato de array. Ele inclui listas `Consolidada` e `Exportada` em ordem cronológica. Listas em `Rascunho` não são incluídas.
 
+O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsMMmin>.json` (ex.: `Carga_DEPÓSITO DE UNIFORMES - SMED_25-09-2026_14h30min.json`).
+
 ```json
 [
   {
@@ -151,11 +153,13 @@ O botão de exportação do Hub gera um único arquivo JSON em formato de array.
     "codigo_destino": "ESC-MACHADO-ASSIS",
     "itens": [
       {
-        "codigo": "2201",
+        "codigos": ["2201"],
+        "descricao": "ARROZ PARBOILIZADO",
         "quantidade": 150
       },
       {
-        "codigo": "37357",
+        "codigos": ["37357"],
+        "descricao": "LEITE EM PÓ",
         "quantidade": 10
       }
     ]

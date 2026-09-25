@@ -12,6 +12,7 @@ export interface IListaRanchoData {
   id?: number;
   origem_id: number;
   codigo_origem: string;
+  nome_origem: string;
   escola_id: number;
   codigo_destino: string;
   itens: ItemRancho[];
@@ -26,6 +27,7 @@ export interface PayloadRPA {
   codigo_destino: string;
   itens: Array<{
     codigos: string[];
+    descricao: string;
     quantidade: number;
   }>;
 }

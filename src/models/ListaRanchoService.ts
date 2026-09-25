@@ -8,6 +8,7 @@ interface ListaPersistida {
   id: number;
   origem_id: number;
   codigo_origem: string;
+  nome_origem: string;
   escola_id: number;
   codigo_destino: string;
   data_criacao: string;
@@ -17,6 +18,7 @@ interface ListaPersistida {
 interface ItemPersistido {
   produto_id: number;
   codigos_erp: string;
+  descricao: string;
   quantidade: number;
 }
 
@@ -60,14 +62,14 @@ export class ListaRanchoService {
 
   static async adicionarItem(db: SQLiteDatabase, listaId: number, produtoId: number, quantidade: number): Promise<void> {
     await db.withExclusiveTransactionAsync(async (txn) => {
-      const produto = await txn.getFirstAsync<{ id: number, codigos_erp: string }>(
-        'SELECT id, codigos_erp FROM itens WHERE id = ? AND ativo = 1',
+      const produto = await txn.getFirstAsync<{ id: number, codigos_erp: string, descricao: string }>(
+        'SELECT id, codigos_erp, descricao FROM itens WHERE id = ? AND ativo = 1',
         [produtoId]
       );
       if (!produto) throw new Error('Produto não encontrado ou inativo.');
 
       const lista = await this.reidratar(txn, listaId);
-      lista.adicionarItem({ produto_id: produto.id, codigos_erp: JSON.parse(produto.codigos_erp), quantidade });
+      lista.adicionarItem({ produto_id: produto.id, codigos_erp: JSON.parse(produto.codigos_erp), descricao: produto.descricao, quantidade });
       await this.persistirItens(txn, lista);
     });
   }
@@ -120,12 +122,16 @@ export class ListaRanchoService {
     }
 
     const payloads: PayloadRPA[] = [];
+    let depositoNomeExportacao = '';
     for (const listaPersistida of listas) {
       const lista = await this.reidratar(db, listaPersistida.id);
+      if (!depositoNomeExportacao) {
+        depositoNomeExportacao = lista.getData().nome_origem;
+      }
       payloads.push(lista.gerarPayload());
     }
 
-    await ExportacaoModel.exportarArquivo(payloads);
+    await ExportacaoModel.exportarArquivo(payloads, depositoNomeExportacao);
 
     await db.withExclusiveTransactionAsync(async (txn) => {
       for (const listaPersistida of listas) {
@@ -144,7 +150,7 @@ export class ListaRanchoService {
   static async exportar(db: SQLiteDatabase, listaId: number): Promise<PayloadRPA> {
     const listaParaExportacao = await this.reidratar(db, listaId);
     const payload = listaParaExportacao.exportar();
-    await ExportacaoModel.exportarArquivo(payload);
+    await ExportacaoModel.exportarArquivo(payload, listaParaExportacao.getData().nome_origem);
 
     await db.withExclusiveTransactionAsync(async (txn) => {
       const lista = await this.reidratar(txn, listaId);
@@ -164,7 +170,7 @@ export class ListaRanchoService {
 
   private static async reidratar(db: SQLiteDatabase, listaId: number): Promise<ListaRancho> {
     const cabecalho = await db.getFirstAsync<ListaPersistida>(`
-      SELECT l.id, l.origem_id, d.codigo AS codigo_origem, l.escola_id,
+      SELECT l.id, l.origem_id, d.codigo AS codigo_origem, d.nome AS nome_origem, l.escola_id,
              e.codigo_deposito AS codigo_destino, l.data_criacao, l.status
       FROM listas l
       JOIN depositos_origem d ON d.id = l.origem_id
@@ -174,11 +180,11 @@ export class ListaRanchoService {
     if (!cabecalho) throw new Error('Lista não encontrada.');
 
     const itens = await db.getAllAsync<ItemPersistido>(`
-      SELECT i.id AS produto_id, i.codigos_erp, SUM(il.quantidade) AS quantidade
+      SELECT i.id AS produto_id, i.codigos_erp, i.descricao, SUM(il.quantidade) AS quantidade
       FROM itens_lista il
       JOIN itens i ON i.id = il.produto_id
       WHERE il.lista_id = ?
-      GROUP BY i.id
+      GROUP BY i.id, i.codigos_erp, i.descricao
     `, [listaId]);
 
     return new ListaRancho({ 
@@ -186,6 +192,7 @@ export class ListaRanchoService {
       itens: itens.map(i => ({
         produto_id: i.produto_id,
         codigos_erp: JSON.parse(i.codigos_erp),
+        descricao: i.descricao,
         quantidade: i.quantidade
       }))
     });

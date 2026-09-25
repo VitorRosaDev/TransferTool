@@ -3,6 +3,7 @@ import type { ItemRancho, PayloadRPA } from '../interfaces';
 import type { ListaRancho } from '../ListaRancho';
 import { OperacaoBloqueadaError, TransicaoInvalidaError } from '../errors';
 import { ExportadaState } from './ExportadaState';
+import { normalizarCodigos } from '../../utils/stringUtils';
 
 export class ConsolidadaState implements IRanchoState {
   constructor(private contexto: ListaRancho) {}
@@ -46,7 +47,8 @@ export class ConsolidadaState implements IRanchoState {
       codigo_origem: this.contexto.getData().codigo_origem,
       codigo_destino: this.contexto.getData().codigo_destino,
       itens: this.contexto.getData().itens.map(item => ({
-        codigos: item.codigos_erp,
+        codigos: normalizarCodigos(item.codigos_erp),
+        descricao: item.descricao ?? '',
         quantidade: item.quantidade
       }))
     };

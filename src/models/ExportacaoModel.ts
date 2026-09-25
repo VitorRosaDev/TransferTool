@@ -9,9 +9,9 @@ export class ExportacaoModel {
   /**
    * Executa a exportação do arquivo JSON.
    */
-  static async exportarArquivo(payload: PayloadRPA | PayloadRPA[]): Promise<void> {
+  static async exportarArquivo(payload: PayloadRPA | PayloadRPA[], depositoNome?: string): Promise<void> {
     const payloads = Array.isArray(payload) ? payload : [payload];
-    const fileName = `transferencias_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    const fileName = this.montarNomeArquivo(depositoNome);
     const jsonString = JSON.stringify(payloads, null, 2);
 
     if (Platform.OS === 'web') {
@@ -39,6 +39,33 @@ export class ExportacaoModel {
         throw error;
       }
     }
+  }
+
+  /** Monta o nome do arquivo no formato Carga_<deposito>_<DD-MM-YYYY>_<HHhsMMmin>.json */
+  private static montarNomeArquivo(depositoNome?: string): string {
+    const agora = new Date();
+    const dd = String(agora.getDate()).padStart(2, '0');
+    const mm = String(agora.getMonth() + 1).padStart(2, '0');
+    const yyyy = agora.getFullYear();
+    const hh = String(agora.getHours()).padStart(2, '0');
+    const min = String(agora.getMinutes()).padStart(2, '0');
+
+    const deposito = this.sanitizarNomeArquivo(depositoNome);
+    const data = `${dd}-${mm}-${yyyy}`;
+    const hora = `${hh}h${min}min`;
+
+    const prefixo = deposito ? `Carga_${deposito}_${data}_${hora}` : `Carga_${data}_${hora}`;
+    return `${prefixo}.json`;
+  }
+
+  /** Remove caracteres inválidos para nome de arquivo, preservando acentos e espaços. */
+  private static sanitizarNomeArquivo(nome?: string): string {
+    if (!nome) return '';
+    return nome
+      .trim()
+      .replace(/[\\/:*?"<>|\r\n]+/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private static downloadWeb(content: string, fileName: string) {

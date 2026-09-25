@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, NativeScrollEvent, NativeSyntheticEvent, KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,6 +38,7 @@ export function ListasCriadas() {
   // Estados do Scanner Integrado
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<ProdutoCatalogo[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [itemAtivo, setItemAtivo] = useState<ProdutoCatalogo | null>(null);
   const [editandoItemId, setEditandoItemId] = useState<number | null>(null);
@@ -83,6 +84,10 @@ export function ListasCriadas() {
 
   // Carregar itens quando a lista selecionada mudar
   useEffect(() => {
+    setSearchQuery('');
+    setSuggestions([]);
+    setIsSearchFocused(false);
+
     if (selectedListaId) {
       loadItens(selectedListaId);
     } else {
@@ -112,12 +117,12 @@ export function ListasCriadas() {
     });
   }, [listas]);
 
-  // Busca dinâmica de itens (Scanner Logic)
+  // Busca dinâmica de itens (Scanner Logic) — com pre-load ao focar
   useEffect(() => {
     async function fetchItems() {
       const currentVersion = ++searchVersionRef.current;
 
-      if (searchQuery.trim().length === 0) {
+      if (!isSearchFocused && searchQuery.trim().length === 0) {
         setSuggestions([]);
         return;
       }
@@ -133,7 +138,7 @@ export function ListasCriadas() {
     }
     const delay = setTimeout(fetchItems, 300);
     return () => clearTimeout(delay);
-  }, [searchQuery, db]);
+  }, [searchQuery, isSearchFocused, db]);
 
   const loadItens = async (id: number) => {
     idCarregamentoItensRef.current = id;
@@ -259,6 +264,7 @@ export function ListasCriadas() {
     setQuantidade('');
     setSearchQuery('');
     setSuggestions([]);
+    setIsSearchFocused(false);
     setModalVisible(true);
   };
 
@@ -416,6 +422,8 @@ export function ListasCriadas() {
                     placeholderTextColor={colors.textMuted}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                   />
                 </View>
                 {suggestions.length > 0 && (
@@ -482,7 +490,10 @@ export function ListasCriadas() {
 
       {/* 4. MODAL DE INSERÇÃO INTEGRADO */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>{editandoItemId ? 'Editar Item' : 'Adicionar Item'}</Text>
@@ -510,7 +521,7 @@ export function ListasCriadas() {
               <Text style={styles.masterBtnText}>Salvar na Lista</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "temp_app",
-    "slug": "temp_app",
+    "name": "TransferTool",
+    "slug": "TransferTool",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F3F4F6",
+      "dark": {
+        "image": "./assets/splash-icon.png",
+        "backgroundColor": "#000000"
+      }
     },
     "ios": {
       "supportsTablet": true
@@ -18,10 +22,11 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vitorrosadev.TransferTool"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,7 +34,13 @@
     "plugins": [
       "expo-sqlite",
       "expo-sharing",
-      "expo-status-bar"
-    ]
+      "expo-status-bar",
+      "expo-splash-screen"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "919a7686-5cf9-4af9-9951-4e23e07bacff"
+      }
+    }
   }
 }

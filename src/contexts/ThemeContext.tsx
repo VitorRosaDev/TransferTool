@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 export type ThemeColors = {
   background: string;
@@ -55,17 +55,27 @@ const darkTheme: ThemeColors = {
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [themeType, setThemeType] = useState<ThemeType>('light');
-
-  // Carregar tema persistido
-  useEffect(() => {
+  const systemColorScheme = useColorScheme();
+  const [themeType, setThemeType] = useState<ThemeType>(() => {
     if (Platform.OS === 'web') {
       const saved = localStorage.getItem('@theme_type');
       if (saved === 'light' || saved === 'dark') {
-        setThemeType(saved as ThemeType);
+        return saved as ThemeType;
       }
     }
-  }, []);
+    return systemColorScheme === 'dark' ? 'dark' : 'light';
+  });
+
+  // Escutar alterações do sistema em tempo real
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const saved = localStorage.getItem('@theme_type');
+      if (saved) return;
+    }
+    if (systemColorScheme === 'light' || systemColorScheme === 'dark') {
+      setThemeType(systemColorScheme);
+    }
+  }, [systemColorScheme]);
 
   const toggleTheme = () => {
     setThemeType(prev => {
@@ -88,3 +98,4 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useTheme = () => useContext(ThemeContext);
+

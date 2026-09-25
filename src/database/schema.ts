@@ -69,6 +69,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
   `);
 
   await removerColunasDeValidade(db);
+  await adicionarColunaDepositoVinculado(db);
 }
 
 /** Remove campos obsoletos de bancos criados por versões anteriores do app. */
@@ -81,6 +82,17 @@ async function removerColunasDeValidade(db: SQLite.SQLiteDatabase) {
   const colunasItensLista = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens_lista)');
   if (colunasItensLista.some(coluna => coluna.name === 'data_validade')) {
     await db.execAsync('ALTER TABLE itens_lista DROP COLUMN data_validade');
+  }
+}
+
+/**
+ * Adiciona a coluna de "depósito vinculado" em `itens` (feature futura).
+ * É apenas uma preparação de schema: nenhuma lógica de negócio a consome ainda.
+ */
+async function adicionarColunaDepositoVinculado(db: SQLite.SQLiteDatabase) {
+  const colunasItens = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens)');
+  if (!colunasItens.some(coluna => coluna.name === 'deposito_id')) {
+    await db.execAsync('ALTER TABLE itens ADD COLUMN deposito_id INTEGER REFERENCES depositos_origem(id)');
   }
 }
 
@@ -119,11 +131,12 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase) {
     );
   }
   
-  // 3. Popular Itens (Catálogo sem quantidade)
+  // 3. Popular Itens (Catálogo sem quantidade) — códigos normalizados em array
   for (const item of SEED_ITENS) {
+    const codigos = String(item.codigo).split(',').map(c => c.trim()).filter(Boolean);
     await db.runAsync(
       'INSERT INTO itens (codigos_erp, descricao, descricao_busca) VALUES (?, ?, ?)',
-      [JSON.stringify([item.codigo]), item.descricao, removeAcentos(item.descricao)]
+      [JSON.stringify(codigos), item.descricao, removeAcentos(item.descricao)]
     );
   }
   

@@ -16,6 +16,7 @@ describe('ListaRanchoService', () => {
       id: 7,
       origem_id: 1,
       codigo_origem: 'DEP-01',
+      nome_origem: 'DEP-01',
       escola_id: 2,
       codigo_destino: 'ESC-01',
       data_criacao: '2026-01-01T10:00:00.000Z',
@@ -48,6 +49,7 @@ describe('ListaRanchoService', () => {
       id: 7,
       origem_id: 1,
       codigo_origem: 'DEP-01',
+      nome_origem: 'DEP-01',
       escola_id: 2,
       codigo_destino: 'ESC-01',
       data_criacao: '2026-01-01T10:00:00.000Z',
@@ -86,12 +88,13 @@ describe('ListaRanchoService', () => {
         { id: 7, status: 'Consolidada' },
         { id: 8, status: 'Exportada' },
       ])
-      .mockResolvedValue([{ produto_id: 1, codigos_erp: '["ITEM-01"]', quantidade: 10 }]);
+      .mockResolvedValue([{ produto_id: 1, codigos_erp: '["ITEM-01"]', descricao: 'ITEM TESTE', quantidade: 10 }]);
     (mockDb.getFirstAsync as jest.Mock)
       .mockResolvedValueOnce({
         id: 7,
         origem_id: 1,
         codigo_origem: 'DEP-01',
+        nome_origem: 'DEP-01',
         escola_id: 2,
         codigo_destino: 'ESC-01',
         data_criacao: '2026-01-01T10:00:00.000Z',
@@ -101,6 +104,7 @@ describe('ListaRanchoService', () => {
         id: 8,
         origem_id: 1,
         codigo_origem: 'DEP-01',
+        nome_origem: 'DEP-01',
         escola_id: 2,
         codigo_destino: 'ESC-02',
         data_criacao: '2026-01-02T10:00:00.000Z',
@@ -110,6 +114,7 @@ describe('ListaRanchoService', () => {
         id: 7,
         origem_id: 1,
         codigo_origem: 'DEP-01',
+        nome_origem: 'DEP-01',
         escola_id: 2,
         codigo_destino: 'ESC-01',
         data_criacao: '2026-01-01T10:00:00.000Z',
@@ -119,7 +124,7 @@ describe('ListaRanchoService', () => {
     const payloads = await ListaRanchoService.exportarTodas(mockDb);
 
     expect(payloads).toHaveLength(2);
-    expect(exportarArquivo).toHaveBeenCalledWith(payloads);
+    expect(exportarArquivo).toHaveBeenCalledWith(payloads, 'DEP-01');
     expect(mockDb.runAsync).toHaveBeenCalledWith(
       'UPDATE listas SET status = ? WHERE id = ?',
       ['Exportada', 7]

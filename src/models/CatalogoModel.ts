@@ -47,6 +47,27 @@ export class CatalogoModel {
   }
 
   /**
+   * Valida códigos de catálogo contra caracteres suspeitos e tamanho máximo,
+   * alinhado à validação do TransferToolRPA (que rejeita payloads inválidos).
+   */
+  private static validarCodigos(codigo: string | string[]): void {
+    const lista = Array.isArray(codigo) ? codigo : [codigo];
+    const suspeitos = ['..', '/', '\\', ';', "'", '"', '<', '>', '\n', '\r'];
+
+    for (const codigoBruto of lista) {
+      const limpo = (codigoBruto ?? '').trim();
+      if (!limpo) throw new Error('Código não pode ser vazio.');
+      if (limpo.length > 50) throw new Error(`Código "${limpo}" excede 50 caracteres.`);
+
+      for (const caractere of suspeitos) {
+        if (limpo.includes(caractere)) {
+          throw new Error(`Código "${limpo}" contém caractere inválido.`);
+        }
+      }
+    }
+  }
+
+  /**
    * Lista itens do catálogo baseados no status ativo/inativo
    */
   static async listar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, ativo: boolean): Promise<ItemCatalogo[]> {
@@ -72,6 +93,7 @@ export class CatalogoModel {
     if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
       throw new Error('Código e nome são obrigatórios.');
     }
+    this.validarCodigos(codigo);
 
     const table = this.getTable(entidade);
     const cols = this.getColumnNames(entidade);
@@ -99,6 +121,7 @@ export class CatalogoModel {
     if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
       throw new Error('Código e nome são obrigatórios.');
     }
+    this.validarCodigos(codigo);
 
     const table = this.getTable(entidade);
     const cols = this.getColumnNames(entidade);

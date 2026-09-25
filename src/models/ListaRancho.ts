@@ -20,6 +20,7 @@ export class ListaRancho {
       this.data = {
         origem_id: 0,
         codigo_origem: '',
+        nome_origem: '',
         escola_id: 0,
         codigo_destino: '',
         itens: [],

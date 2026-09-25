@@ -278,299 +278,375 @@ export const SEED_ESCOLAS = [
 
 export const SEED_ITENS = [
   {
-    "codigo": "2201",
-    "descricao": "ARROZ PARBOILIZADO",
+    "codigo": "8564",
+    "descricao": "ACENDEDOR DE FOGÃO"
   },
   {
-    "codigo": "2203",
-    "descricao": "BISCOITO CREAM CRACKER",
-  },
-  {
-    "codigo": "2214",
-    "descricao": "FARINHA DE MANDIOCA",
-  },
-  {
-    "codigo": "2215",
-    "descricao": "FARINHA DE MILHO",
-  },
-  {
-    "codigo": "2216",
-    "descricao": "FARINHA DE TRIGO",
-  },
-  {
-    "codigo": "2217",
-    "descricao": "FEIJÃO CARIOCA",
-  },
-  {
-    "codigo": "2218",
-    "descricao": "FEIJÃO PRETO",
-  },
-  {
-    "codigo": "2223",
-    "descricao": "MACARRÃO - CARAMUJINHO/CONCHINHA",
-  },
-  {
-    "codigo": "2224",
-    "descricao": "MACARRÃO - PARAFUSO",
-  },
-  {
-    "codigo": "2227",
-    "descricao": "MACARRÃO - TORTILHONE",
-  },
-  {
-    "codigo": "2235",
-    "descricao": "OLÉO DE SOJA",
-  },
-  {
-    "codigo": "2238",
-    "descricao": "SAL REFINADO",
-  },
-  {
-    "codigo": "2240",
-    "descricao": "VINAGRE DE ÁLCOOL",
-  },
-  {
-    "codigo": "3451",
-    "descricao": "ATUM",
-  },
-  {
-    "codigo": "6615",
-    "descricao": "LEITE EM PÓ INSTANTÂNEO - INTEGRAL",
-  },
-  {
-    "codigo": "7513",
-    "descricao": "LENTILHA",
-  },
-  {
-    "codigo": "8147",
-    "descricao": "AMIDO DE MILHO",
-  },
-  {
-    "codigo": "8875",
-    "descricao": "EXTRATO TOMATE",
-  },
-  {
-    "codigo": "13455",
-    "descricao": "BISCOITO DOCE - SABOR LEITE",
-  },
-  {
-    "codigo": "14944",
-    "descricao": "CHOCOLATE EM PÓ SOLÚVEL - 1KG",
-  },
-  {
-    "codigo": "23615",
-    "descricao": "LEITE EM PÓ",
+    "codigo": "7210",
+    "descricao": "ACHOCOLATADO EM PÓ - DIET"
   },
   {
     "codigo": "25510",
-    "descricao": "AÇÚCAR CRISTAL",
-  },
-  {
-    "codigo": "27874",
-    "descricao": "AVEIA EM FLOCOS FINOS",
-  },
-  {
-    "codigo": "28052",
-    "descricao": "DOCE DE LEITE - 1KG",
-  },
-  {
-    "codigo": "29319",
-    "descricao": "FILME DE PVC 28CM X 30M",
-  },
-  {
-    "codigo": "29427",
-    "descricao": "CANELA EM PÓ",
-  },
-  {
-    "codigo": "29431",
-    "descricao": "LOURO EM FOLHAS",
-  },
-  {
-    "codigo": "29433",
-    "descricao": "ORÉGANO SECO",
-  },
-  {
-    "codigo": "29528",
-    "descricao": "MANJERICÃO",
-  },
-  {
-    "codigo": "34416",
-    "descricao": "FÓRMULA INFANTIL DE SEGUIMENTO - PARA LACTENTES DE 6 A 12 MESES",
-  },
-  {
-    "codigo": "34417",
-    "descricao": "MILHO VERDE",
-  },
-  {
-    "codigo": "34518",
-    "descricao": "SACO PARA AMOSTRA DE ALIMENTOS",
+    "descricao": "AÇÚCAR CRISTAL"
   },
   {
     "codigo": "36706",
-    "descricao": "ALECRIM",
-  },
-  {
-    "codigo": "38355",
-    "descricao": "COPO DE ÁGUA MINERAL - 200 ML",
-  },
-  {
-    "codigo": "777",
-    "descricao": "BALDE MULTIUSO (10 A 12 LITROS)",
-  },
-  {
-    "codigo": "2888",
-    "descricao": "BACIA GRANDE",
-  },
-  {
-    "codigo": "5573",
-    "descricao": "BACIA MÉDIA",
-  },
-  {
-    "codigo": "6144",
-    "descricao": "COLHER SOBREMESA  - INOX",
-  },
-  {
-    "codigo": "7539",
-    "descricao": "PEGADOR DE MASSAS - INOX",
-  },
-  {
-    "codigo": "7560",
-    "descricao": "ESCOVA LAVAR MAMADEIRAS",
-  },
-  {
-    "codigo": "8564",
-    "descricao": "ACENDEDOR DE FOGÃO",
-  },
-  {
-    "codigo": "8784",
-    "descricao": "ESTERILIZADOR DE MAMADEIRAS",
-  },
-  {
-    "codigo": "12548",
-    "descricao": "POTE PLÁSTICO GRANDE",
-  },
-  {
-    "codigo": "14811",
-    "descricao": "CONCHA GRANDE",
-  },
-  {
-    "codigo": "23386",
-    "descricao": "COLHER DE POLIETILENO",
-  },
-  {
-    "codigo": "23875",
-    "descricao": "PÁ DE POLIETILENO",
-  },
-  {
-    "codigo": "30667",
-    "descricao": "PRATO DESCARTÁVEL - 15CM",
-  },
-  {
-    "codigo": "31973",
-    "descricao": "ESPETO/PALITO PARA CHURRASCO - 25CM",
-  },
-  {
-    "codigo": "32805",
-    "descricao": "SACO PARA PIPOCA",
-  },
-  {
-    "codigo": "32929",
-    "descricao": "CANECA - INOX",
-  },
-  {
-    "codigo": "32991",
-    "descricao": "PANELA CAÇAROLA GRANDE",
-  },
-  {
-    "codigo": "32994",
-    "descricao": "POTE PLÁSTICO PEQUENO",
-  },
-  {
-    "codigo": "33493",
-    "descricao": "BALANÇA DIGITAL ELETRÔNICA DE COZINHA",
-  },
-  {
-    "codigo": "34544",
-    "descricao": "PÁ DE LIXO",
+    "descricao": "ALECRIM"
   },
   {
     "codigo": "37353",
-    "descricao": "AMASSADOR DE BATATAS",
+    "descricao": "AMASSADOR DE BATATAS"
+  },
+  {
+    "codigo": "8147",
+    "descricao": "AMIDO DE MILHO"
+  },
+  {
+    "codigo": "10091",
+    "descricao": "ARROZ ORGÂNICO PARBOILIZADO"
+  },
+  {
+    "codigo": "2201",
+    "descricao": "ARROZ PARBOILIZADO"
+  },
+  {
+    "codigo": "3451",
+    "descricao": "ATUM"
+  },
+  {
+    "codigo": "27874",
+    "descricao": "AVEIA EM FLOCOS FINOS"
+  },
+  {
+    "codigo": "2888",
+    "descricao": "BACIA GRANDE"
+  },
+  {
+    "codigo": "5573",
+    "descricao": "BACIA MÉDIA"
+  },
+  {
+    "codigo": "33493",
+    "descricao": "BALANÇA DIGITAL ELETRÔNICA DE COZINHA"
+  },
+  {
+    "codigo": "777",
+    "descricao": "BALDE MULTIUSO (10 A 12 LITROS)"
+  },
+  {
+    "codigo": "2203",
+    "descricao": "BISCOITO CREAM CRACKER"
+  },
+  {
+    "codigo": "13455",
+    "descricao": "BISCOITO DOCE - SABOR LEITE"
+  },
+  {
+    "codigo": "28848",
+    "descricao": "BISCOITO DOCE - TIPO MAISENA"
+  },
+  {
+    "codigo": "2206",
+    "descricao": "BISCOITO MARIA INTEGRAL CHOCOLATE"
+  },
+  {
+    "codigo": "16133",
+    "descricao": "CAFÉ SOLÚVEL"
+  },
+  {
+    "codigo": "32929",
+    "descricao": "CANECA - INOX"
+  },
+  {
+    "codigo": "29427",
+    "descricao": "CANELA EM PÓ"
+  },
+  {
+    "codigo": "14944",
+    "descricao": "CHOCOLATE EM PÓ SOLÚVEL - 1KG"
+  },
+  {
+    "codigo": "6840",
+    "descricao": "CHOCOLATE EM PO SOLÚVEL - 200G"
+  },
+  {
+    "codigo": "23386",
+    "descricao": "COLHER DE POLIETILENO"
+  },
+  {
+    "codigo": "6144",
+    "descricao": "COLHER SOBREMESA  - INOX"
+  },
+  {
+    "codigo": "9523",
+    "descricao": "COLORAU"
+  },
+  {
+    "codigo": "14811",
+    "descricao": "CONCHA GRANDE"
+  },
+  {
+    "codigo": "38355",
+    "descricao": "COPO DE ÁGUA MINERAL - 200 ML"
   },
   {
     "codigo": "37354",
-    "descricao": "CORTADOR LEGUMES GRANDE",
+    "descricao": "CORTADOR LEGUMES GRANDE"
   },
   {
     "codigo": "37355",
-    "descricao": "CORTADOR LEGUMES PEQUENO",
+    "descricao": "CORTADOR LEGUMES PEQUENO"
+  },
+  {
+    "codigo": "28052",
+    "descricao": "DOCE DE LEITE - 1KG"
   },
   {
     "codigo": "37357",
-    "descricao": "ESCORREDOR MACARRÃO DOMÉSTICO",
+    "descricao": "ESCORREDOR MACARRÃO DOMÉSTICO"
+  },
+  {
+    "codigo": "7560",
+    "descricao": "ESCOVA LAVAR MAMADEIRAS"
+  },
+  {
+    "codigo": "31973",
+    "descricao": "ESPETO/PALITO PARA CHURRASCO - 25CM"
+  },
+  {
+    "codigo": "8784",
+    "descricao": "ESTERILIZADOR DE MAMADEIRAS"
+  },
+  {
+    "codigo": "8875, 12494",
+    "descricao": "EXTRATO TOMATE"
+  },
+  {
+    "codigo": "2214",
+    "descricao": "FARINHA DE MANDIOCA"
+  },
+  {
+    "codigo": "2215",
+    "descricao": "FARINHA DE MILHO"
+  },
+  {
+    "codigo": "2216",
+    "descricao": "FARINHA DE TRIGO"
+  },
+  {
+    "codigo": "28856",
+    "descricao": "FARINHA DE TRIGO INTEGRAL"
+  },
+  {
+    "codigo": "2217",
+    "descricao": "FEIJÃO CARIOCA"
+  },
+  {
+    "codigo": "2218",
+    "descricao": "FEIJÃO PRETO"
+  },
+  {
+    "codigo": "12614",
+    "descricao": "FERMENTO BIOLÓGICO"
+  },
+  {
+    "codigo": "24534",
+    "descricao": "FERMENTO EM PÓ - QUÍMICO"
+  },
+  {
+    "codigo": "29319",
+    "descricao": "FILME DE PVC 28CM X 30M"
   },
   {
     "codigo": "37362",
-    "descricao": "FORMA ALUMÍNIO GRANDE",
+    "descricao": "FORMA ALUMÍNIO GRANDE"
   },
   {
     "codigo": "37363",
-    "descricao": "FORMA ALUMÍNIO MÉDIA",
+    "descricao": "FORMA ALUMÍNIO MÉDIA"
+  },
+  {
+    "codigo": "34415",
+    "descricao": "FÓRMULA INFANTIL DE PARTIDA PARA LACTENTES DE 0 A 6 MESES"
+  },
+  {
+    "codigo": "34416",
+    "descricao": "FÓRMULA INFANTIL DE SEGUIMENTO - PARA LACTENTES DE 6 A 12 MESES"
   },
   {
     "codigo": "37366",
-    "descricao": "GARRAFA TÉRMICA 12L",
+    "descricao": "GARRAFA TÉRMICA 12L"
   },
   {
     "codigo": "37368",
-    "descricao": "JARRA COM TAMPA",
+    "descricao": "JARRA COM TAMPA"
   },
   {
     "codigo": "37369",
-    "descricao": "JARRA MEDIDORA",
+    "descricao": "JARRA MEDIDORA"
+  },
+  {
+    "codigo": "6615, 23615",
+    "descricao": "LEITE EM PÓ"
+  },
+  {
+    "codigo": "29285",
+    "descricao": "LEITE EM PÓ - SEM LACTOSE"
+  },
+  {
+    "codigo": "3343",
+    "descricao": "LEITEIRA"
+  },
+  {
+    "codigo": "7513",
+    "descricao": "LENTILHA"
   },
   {
     "codigo": "37371",
-    "descricao": "LIXEIRA EM PVC COM TAMPA - 15 LITROS",
+    "descricao": "LIXEIRA EM PVC COM TAMPA - 15 LITROS"
+  },
+  {
+    "codigo": "29431",
+    "descricao": "LOURO EM FOLHAS"
   },
   {
     "codigo": "37372",
-    "descricao": "LUVA TÉRMICA",
+    "descricao": "LUVA TÉRMICA"
+  },
+  {
+    "codigo": "2223",
+    "descricao": "MACARRÃO - CARAMUJINHO/CONCHINHA"
+  },
+  {
+    "codigo": "2999",
+    "descricao": "MACARRÃO - ESPAGUETE"
+  },
+  {
+    "codigo": "2224",
+    "descricao": "MACARRÃO - PARAFUSO"
+  },
+  {
+    "codigo": "36708",
+    "descricao": "MACARRÃO - PARAFUSO INTEGRAL"
+  },
+  {
+    "codigo": "2227",
+    "descricao": "MACARRÃO - TORTILHONE"
+  },
+  {
+    "codigo": "29528",
+    "descricao": "MANJERICÃO"
+  },
+  {
+    "codigo": "6478, 40306",
+    "descricao": "MILHO PIPOCA"
+  },
+  {
+    "codigo": "34417",
+    "descricao": "MILHO VERDE"
+  },
+  {
+    "codigo": "2235",
+    "descricao": "OLÉO DE SOJA"
+  },
+  {
+    "codigo": "29433",
+    "descricao": "ORÉGANO SECO"
+  },
+  {
+    "codigo": "34544",
+    "descricao": "PÁ DE LIXO"
+  },
+  {
+    "codigo": "23875",
+    "descricao": "PÁ DE POLIETILENO"
+  },
+  {
+    "codigo": "32991",
+    "descricao": "PANELA CAÇAROLA GRANDE"
   },
   {
     "codigo": "37373",
-    "descricao": "PANELA CAÇAROLA MÉDIA",
+    "descricao": "PANELA CAÇAROLA MÉDIA"
   },
   {
     "codigo": "37376",
-    "descricao": "PANELA CALDEIRÃO MÉDIA",
+    "descricao": "PANELA CALDEIRÃO MÉDIA"
+  },
+  {
+    "codigo": "7539",
+    "descricao": "PEGADOR DE MASSAS - INOX"
   },
   {
     "codigo": "37379",
-    "descricao": "PENEIRA/COADOR DE INOX",
+    "descricao": "PENEIRA/COADOR DE INOX"
   },
   {
     "codigo": "37381",
-    "descricao": "PLACA DE POLIETILENO BRANCA",
+    "descricao": "PLACA DE POLIETILENO BRANCA"
   },
   {
     "codigo": "37382",
-    "descricao": "PLACA DE POLIETILENO VERDE",
+    "descricao": "PLACA DE POLIETILENO VERDE"
   },
   {
     "codigo": "37383",
-    "descricao": "PLACA DE POLIETILENO VERMELHA",
+    "descricao": "PLACA DE POLIETILENO VERMELHA"
+  },
+  {
+    "codigo": "12548",
+    "descricao": "POTE PLÁSTICO GRANDE"
+  },
+  {
+    "codigo": "32994",
+    "descricao": "POTE PLÁSTICO PEQUENO"
   },
   {
     "codigo": "37384",
-    "descricao": "POTE PLÁSTICO PEQUENO TEMPEROS",
+    "descricao": "POTE PLÁSTICO PEQUENO TEMPEROS"
+  },
+  {
+    "codigo": "30667",
+    "descricao": "PRATO DESCARTÁVEL - 15CM"
   },
   {
     "codigo": "37386",
-    "descricao": "PRATO FUNDO DE INOX",
+    "descricao": "PRATO FUNDO DE INOX"
   },
   {
     "codigo": "37387",
-    "descricao": "RALADOR MANUAL",
+    "descricao": "RALADOR MANUAL"
+  },
+  {
+    "codigo": "34518",
+    "descricao": "SACO PARA AMOSTRA DE ALIMENTOS"
+  },
+  {
+    "codigo": "32805",
+    "descricao": "SACO PARA PIPOCA"
+  },
+  {
+    "codigo": "35192",
+    "descricao": "SACOS PLÁSTICOS PARA ALIMENTOS (BOBINA) - 10KG"
+  },
+  {
+    "codigo": "2238",
+    "descricao": "SAL REFINADO"
+  },
+  {
+    "codigo": "29299",
+    "descricao": "SUCO DE UVA TINTO INTEGRAL - 1L"
+  },
+  {
+    "codigo": "2240, 4861",
+    "descricao": "VINAGRE DE ÁLCOOL"
+  },
+  {
+    "codigo": "33621",
+    "descricao": "SUCO CAIXINHA UVA"
+  },
+  {
+    "codigo": "33622",
+    "descricao": "SUCO CAIXINHA LARANJA E MAÇÃ"
   }
 ];

@@ -30,7 +30,7 @@ export class ItemModel {
       FROM itens_lista il
       JOIN itens i ON il.produto_id = i.id
       WHERE il.lista_id = ?
-      ORDER BY il.id DESC
+      ORDER BY il.id ASC
     `, [listaId]);
   }
 
