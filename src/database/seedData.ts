@@ -272,7 +272,7 @@ export const SEED_ESCOLAS = [
   }
 ];
 
-export const SEED_ITENS = [
+export const SEED_ITENS: Array<{ codigo: string; descricao: string; fracionado?: boolean; valor_fracionado?: number }> = [
   {
     "codigo": "34415",
     "descricao": "0 A 6 MESES - FÓRMULA INFANTIL DE PARTIDA PARA LACTENTES"
@@ -379,7 +379,9 @@ export const SEED_ITENS = [
   },
   {
     "codigo": "9523",
-    "descricao": "COLORAU"
+    "descricao": "COLORAU",
+    "fracionado": true,
+    "valor_fracionado": 0.05
   },
   {
     "codigo": "14811",
@@ -479,7 +481,9 @@ export const SEED_ITENS = [
   },
   {
     "codigo": "29285",
-    "descricao": "LEITE EM PÓ - SEM LACTOSE"
+    "descricao": "LEITE EM PÓ - SEM LACTOSE",
+    "fracionado": true,
+    "valor_fracionado": 0.4
   },
   {
     "codigo": "3343",

@@ -1,6 +1,6 @@
 # 📦 TransferTool — Hub de Cargas Offline-First
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-emerald?style=for-the-badge&logo=expo)](#)
+[![Version](https://img.shields.io/badge/Version-1.1.0-emerald?style=for-the-badge&logo=expo)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=for-the-badge&logo=typescript)](package.json)
 [![SQLite](https://img.shields.io/badge/Database-SQLite--Offline-blueviolet?style=for-the-badge&logo=sqlite)](src/database/)
 [![Tests](https://img.shields.io/badge/Tests-Jest-success?style=for-the-badge&logo=jest)](src/__tests__/)
@@ -75,6 +75,8 @@ erDiagram
         string codigo "UNIQUE"
         string descricao
         string descricao_busca
+        boolean fracionado "DEFAULT 0"
+        real valor_fracionado "kg por unidade"
         boolean ativo "DEFAULT 1"
     }
 
@@ -116,12 +118,13 @@ Itens de lista e registros de auditoria usam `ON DELETE CASCADE` quando a lista 
 4. **Exclusão:** A exclusão física é permitida em qualquer estado e remove a lista, seus itens e seu log local por cascata. O histórico oficial das cargas permanece no ERP de destino.
 5. **Soft Delete do Catálogo:** A remoção de itens, depósitos ou destinos do catálogo utiliza a flag `ativo = 0`, preservando referências existentes.
 6. **Validade:** Data de validade não faz parte do domínio atual. Bancos criados por versões anteriores têm as colunas obsoletas removidas durante a inicialização.
+7. **Itens fracionados:** Itens com registro no ERP por kg, mas distribuídos em pacotes no depósito, são marcados com `fracionado = 1` e possuem um `valor_fracionado` (kg por unidade). Na montagem da carga o operador conta pacotes; o payload exporta a quantidade convertida para kg (`pacotes × valor_fracionado`).
 
 ---
 
 ## 🤖 Integração ERP via Fluxo RPA (Automação de Processos)
 
-O app gera um arquivo de exportação em JSON estritamente parametrizado apenas com códigos (elimina digitação manual do operador humano no ERP da prefeitura). O RPA faz a leitura do JSON e preenche o sistema ERP em segundos.
+O app gera um arquivo de exportação em JSON estritamente parametrizado (elimina digitação manual do operador humano no ERP da prefeitura). O RPA faz a leitura do JSON e preenche o sistema ERP em segundos.
 
 ### Exemplo de Payload Gerado
 
@@ -135,7 +138,9 @@ O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsM
     "id_app": 1,
     "data_geracao": "2026-05-17T16:40:00.000Z",
     "codigo_origem": "DEP-ALIM-CENTRAL",
+    "descricao_origem": "ALMOXARIFADO CENTRAL",
     "codigo_destino": "ESC-MACHADO-ASSIS",
+    "descricao_destino": "ESCOLA MACHADO DE ASSIS",
     "itens": [
       {
         "codigos": ["2201"],
@@ -154,9 +159,13 @@ O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsM
 
 ---
 
+> 💡 **Itens fracionados:** para itens com `fracionado = true`, o campo `quantidade` do payload já é enviado convertido para kg (`pacotes × valor_fracionado`). Ex.: 10 pacotes de COLORAU (0,05 kg/un.) geram `"quantidade": 0.5`.
+
+---
+
 ## 🧪 Suíte de Testes Automatizados (Jest)
 
-A suíte contém **30 testes** (Jest / `jest-expo`) cobrindo o domínio, os modelos e a serialização do payload:
+A suíte contém **32 testes** (Jest / `jest-expo`) cobrindo o domínio, os modelos e a serialização do payload:
 
 | Arquivo | Foco |
 | --- | --- |

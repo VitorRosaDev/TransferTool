@@ -4,6 +4,9 @@ AGENTS.md
 PROJECT_REPORT.md
 /assets/img/
 
+# Arquivos temporários (ex.: lock do Excel ~$*.xlsx)
+~$*
+
 # Expo / React Native
 .expo/
 dist/

@@ -1,0 +1,22 @@
+[
+  {
+    "id_app": 1,
+    "data_geracao": "2026-05-17T16:40:00.000Z",
+    "codigo_origem": "1010",
+    "descricao_origem": "ARMAZÉM CENTRAL",
+    "codigo_destino": "2020",
+    "descricao_destino": "ESCOLA MUNICIPAL",
+    "itens": [
+      {
+        "codigos": ["2201"],
+        "descricao": "ARROZ PARBOILIZADO",
+        "quantidade": 150
+      },
+      {
+        "codigos": ["37357"],
+        "descricao": "LEITE EM PÓ",
+        "quantidade": 0.4
+      }
+    ]
+  }
+]

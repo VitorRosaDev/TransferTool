@@ -5,6 +5,19 @@ Todas as mudanças relevantes deste projeto são documentadas neste arquivo.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
 e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] - 2026-09-26
+
+### Adicionado
+- Itens fracionados: colunas `fracionado` e `valor_fracionado` na tabela `itens` (registro no ERP por kg, mas distribuição em pacotes no depósito).
+- Conversão automática no payload: quantidade em pacotes × valor fracionado (kg/unidade), com arredondamento em 3 casas decimais.
+- Configuração de item fracionado no catálogo (toggle + campo "Kg por unidade").
+- Aviso de item fracionado no modal de quantidade da carga ("conte em pacotes") e validação de quantidade inteira.
+- Seed e migração: `9523 COLORAU` (0,05 kg/un.) e `29285 LEITE EM PÓ - SEM LACTOSE` (0,4 kg/un.).
+- Campos `descricao_origem` e `descricao_destino` no payload de exportação (alinhado ao `assets/exemploDePayload.json`).
+
+### Alterado
+- Payload de exportação passa a enviar a quantidade final em kg para itens fracionados (o RPA não precisa de alteração).
+
 ## [Unreleased] - 2026-09-25
 
 ### Adicionado

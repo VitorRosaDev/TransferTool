@@ -4,6 +4,8 @@ export interface ItemRancho {
   codigos_erp: string[];
   descricao?: string;
   quantidade: number;
+  fracionado?: boolean;
+  valor_fracionado?: number | null;
 }
 
 export type StatusLista = 'Rascunho' | 'Consolidada' | 'Exportada';
@@ -15,6 +17,7 @@ export interface IListaRanchoData {
   nome_origem: string;
   escola_id: number;
   codigo_destino: string;
+  nome_destino: string;
   itens: ItemRancho[];
   status: StatusLista;
   data_criacao: string;
@@ -24,7 +27,9 @@ export interface PayloadRPA {
   id_app: number;
   data_geracao: string;
   codigo_origem: string;
+  descricao_origem: string;
   codigo_destino: string;
+  descricao_destino: string;
   itens: Array<{
     codigos: string[];
     descricao: string;

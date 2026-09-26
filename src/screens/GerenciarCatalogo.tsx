@@ -162,6 +162,8 @@ export function GerenciarCatalogo() {
   const [nome, setNome] = useState('');
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [fracionado, setFracionado] = useState(false);
+  const [valorFracionado, setValorFracionado] = useState('');
 
   const resetForm = () => {
     setCodigo('');
@@ -169,6 +171,8 @@ export function GerenciarCatalogo() {
     setNovoCodigoItem('');
     setNome('');
     setEditId(null);
+    setFracionado(false);
+    setValorFracionado('');
   };
 
   const handleSave = async () => {
@@ -176,6 +180,13 @@ export function GerenciarCatalogo() {
       if (codigosItem.length === 0 || !nome.trim()) {
         Alert.alert('Erro', 'Preencha a descrição e adicione pelo menos um código.');
         return;
+      }
+      if (fracionado) {
+        const valor = Number(valorFracionado.replace(',', '.').trim());
+        if (!valorFracionado.trim() || isNaN(valor) || valor <= 0) {
+          Alert.alert('Erro', 'Informe o valor fracionado (kg por unidade) maior que zero.');
+          return;
+        }
       }
     } else {
       if (!codigo.trim() || !nome.trim()) {
@@ -187,11 +198,14 @@ export function GerenciarCatalogo() {
     setLoading(true);
     try {
       const payloadCodigo = category === 'item' ? codigosItem : codigo.trim();
+      const opcoes = category === 'item'
+        ? { fracionado, valorFracionado: fracionado ? Number(valorFracionado.replace(',', '.').trim()) : null }
+        : undefined;
       if (action === 'editar' && editId) {
-        await CatalogoModel.editar(db, category!, editId, payloadCodigo, nome.trim());
+        await CatalogoModel.editar(db, category!, editId, payloadCodigo, nome.trim(), opcoes);
         Alert.alert('Sucesso', `${category} atualizado com sucesso!`);
       } else {
-        await CatalogoModel.adicionar(db, category!, payloadCodigo, nome.trim());
+        await CatalogoModel.adicionar(db, category!, payloadCodigo, nome.trim(), opcoes);
         Alert.alert('Sucesso', `${category} adicionado com sucesso!`);
       }
       resetForm();
@@ -231,6 +245,8 @@ export function GerenciarCatalogo() {
       } catch {
         setCodigosItem([item.codigo]);
       }
+      setFracionado(!!item.fracionado);
+      setValorFracionado(item.valor_fracionado != null ? String(item.valor_fracionado) : '');
     } else {
       setCodigo(item.codigo);
     }
@@ -265,6 +281,27 @@ export function GerenciarCatalogo() {
                   </TouchableOpacity>
                 </View>
               ))}
+            </View>
+          )}
+          <Text style={[styles.label, { color: colors.text, marginTop: 8 }]}>Item fracionado?</Text>
+          <TouchableOpacity
+            style={[styles.toggleRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => setFracionado(v => !v)}
+          >
+            <Text style={{ color: colors.text }}>{fracionado ? 'Sim — registro no ERP por kg' : 'Não — registro direto (unidade)'}</Text>
+            <Ionicons name={fracionado ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={fracionado ? colors.primary : colors.textMuted} />
+          </TouchableOpacity>
+          {fracionado && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={[styles.label, { color: colors.text }]}>Kg por unidade (valor fracionado)</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+                placeholder="Ex: 0,05 (50g)"
+                placeholderTextColor={colors.textMuted}
+                value={valorFracionado}
+                onChangeText={setValorFracionado}
+                keyboardType="decimal-pad"
+              />
             </View>
           )}
         </View>
@@ -614,6 +651,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     fontSize: 16,
+    borderWidth: 1,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
   },
   submitButton: {

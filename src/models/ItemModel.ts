@@ -4,6 +4,8 @@ export interface ProdutoCatalogo {
   id: number;
   codigos_erp: string;
   descricao: string;
+  fracionado: number;
+  valor_fracionado: number | null;
 }
 
 export interface ItemCarrinho {
@@ -12,13 +14,15 @@ export interface ItemCarrinho {
   descricao: string;
   codigos_erp: string;
   quantidade: number;
+  fracionado: number;
+  valor_fracionado: number | null;
 }
 
 export class ItemModel {
   /** Busca itens no catálogo pelo código ou descrição */
   static async buscarCatalogo(db: SQLiteDatabase, query: string, queryUnaccented: string): Promise<ProdutoCatalogo[]> {
     return await db.getAllAsync<ProdutoCatalogo>(
-      `SELECT id, codigos_erp, descricao FROM itens WHERE (descricao LIKE ? OR descricao_busca LIKE ? OR EXISTS (SELECT 1 FROM json_each(codigos_erp) WHERE value LIKE ?)) AND ativo = 1 LIMIT 5`,
+      `SELECT id, codigos_erp, descricao, fracionado, valor_fracionado FROM itens WHERE (descricao LIKE ? OR descricao_busca LIKE ? OR EXISTS (SELECT 1 FROM json_each(codigos_erp) WHERE value LIKE ?)) AND ativo = 1 LIMIT 5`,
       [`%${query}%`, `%${queryUnaccented}%`, `%${query}%`]
     );
   }
@@ -26,7 +30,7 @@ export class ItemModel {
   /** Busca todos os itens que já foram adicionados a uma lista específica */
   static async getItensCarrinho(db: SQLiteDatabase, listaId: number): Promise<ItemCarrinho[]> {
     return await db.getAllAsync<ItemCarrinho>(`
-      SELECT il.id, il.produto_id, i.descricao, i.codigos_erp, il.quantidade
+      SELECT il.id, il.produto_id, i.descricao, i.codigos_erp, il.quantidade, i.fracionado, i.valor_fracionado
       FROM itens_lista il
       JOIN itens i ON il.produto_id = i.id
       WHERE il.lista_id = ?

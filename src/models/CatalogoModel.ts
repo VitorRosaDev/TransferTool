@@ -14,6 +14,8 @@ export interface ItemCatalogo {
   codigo: string;
   nome: string;
   ativo: number;
+  fracionado?: number;
+  valor_fracionado?: number | null;
 }
 
 /**
@@ -74,9 +76,10 @@ export class CatalogoModel {
     const table = this.getTable(entidade);
     const cols = this.getColumnNames(entidade);
     const status = ativo ? 1 : 0;
+    const colunasExtras = entidade === 'item' ? ', fracionado, valor_fracionado' : '';
 
     const query = `
-      SELECT id, ${cols.code} as codigo, ${cols.name} as nome, ativo 
+      SELECT id, ${cols.code} as codigo, ${cols.name} as nome, ativo${colunasExtras} 
       FROM ${table} 
       WHERE ativo = ? 
       ORDER BY ${cols.name} ASC
@@ -88,7 +91,7 @@ export class CatalogoModel {
   /**
    * Adiciona um novo registro ao catálogo
    */
-  static async adicionar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, codigo: string | string[], nome: string): Promise<void> {
+  static async adicionar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, codigo: string | string[], nome: string, opcoes?: { fracionado?: boolean; valorFracionado?: number | null }): Promise<void> {
     const nomeNormalizado = nome.trim();
     if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
       throw new Error('Código e nome são obrigatórios.');
@@ -105,8 +108,19 @@ export class CatalogoModel {
       codigoFormatado = JSON.stringify([codigo.trim()]);
     }
 
+    if (entidade === 'item') {
+      const query = `
+        INSERT INTO ${table} (${cols.code}, ${cols.name}, ${cols.search}, fracionado, valor_fracionado, ativo)
+        VALUES (?, ?, ?, ?, ?, 1)
+      `;
+      const fracionado = opcoes?.fracionado ? 1 : 0;
+      const valorFracionado = opcoes?.fracionado ? opcoes.valorFracionado ?? null : null;
+      await db.runAsync(query, [codigoFormatado, nomeNormalizado, nomeBusca, fracionado, valorFracionado]);
+      return;
+    }
+
     const query = `
-      INSERT INTO ${table} (${cols.code}, ${cols.name}, ${cols.search}, ativo) 
+      INSERT INTO ${table} (${cols.code}, ${cols.name}, ${cols.search}, ativo)
       VALUES (?, ?, ?, 1)
     `;
 
@@ -116,7 +130,7 @@ export class CatalogoModel {
   /**
    * Edita um registro existente
    */
-  static async editar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, id: number, codigo: string | string[], nome: string): Promise<void> {
+  static async editar(db: SQLite.SQLiteDatabase, entidade: EntidadeCatalogo, id: number, codigo: string | string[], nome: string, opcoes?: { fracionado?: boolean; valorFracionado?: number | null }): Promise<void> {
     const nomeNormalizado = nome.trim();
     if (!codigo || (Array.isArray(codigo) && codigo.length === 0) || !nomeNormalizado) {
       throw new Error('Código e nome são obrigatórios.');
@@ -133,9 +147,21 @@ export class CatalogoModel {
       codigoFormatado = JSON.stringify([codigo.trim()]);
     }
 
+    if (entidade === 'item') {
+      const query = `
+        UPDATE ${table}
+        SET ${cols.code} = ?, ${cols.name} = ?, ${cols.search} = ?, fracionado = ?, valor_fracionado = ?
+        WHERE id = ?
+      `;
+      const fracionado = opcoes?.fracionado ? 1 : 0;
+      const valorFracionado = opcoes?.fracionado ? opcoes.valorFracionado ?? null : null;
+      await db.runAsync(query, [codigoFormatado, nomeNormalizado, nomeBusca, fracionado, valorFracionado, id]);
+      return;
+    }
+
     const query = `
-      UPDATE ${table} 
-      SET ${cols.code} = ?, ${cols.name} = ?, ${cols.search} = ? 
+      UPDATE ${table}
+      SET ${cols.code} = ?, ${cols.name} = ?, ${cols.search} = ?
       WHERE id = ?
     `;
 

@@ -10,6 +10,7 @@ describe('ExportacaoModel', () => {
       nome_origem: 'DEP-TEST',
       escola_id: 2,
       codigo_destino: 'ESC-TEST',
+      nome_destino: 'ESCOLA TESTE',
       data_criacao: '2026-01-01T10:00:00Z',
       status: 'Consolidada',
       itens: [
@@ -23,6 +24,8 @@ describe('ExportacaoModel', () => {
     expect(payload.id_app).toBe(10);
     expect(payload.codigo_origem).toBe('DEP-TEST');
     expect(payload.codigo_destino).toBe('ESC-TEST');
+    expect(payload.descricao_origem).toBe('DEP-TEST');
+    expect(payload.descricao_destino).toBe('ESCOLA TESTE');
     expect(payload.itens.length).toBe(2);
     expect(payload.itens[0].codigos).toEqual(['PROD-01']);
     expect(payload.itens[0].descricao).toBe('Produto A');
@@ -37,6 +40,7 @@ describe('ExportacaoModel', () => {
       nome_origem: 'A',
       escola_id: 2,
       codigo_destino: 'B',
+      nome_destino: 'B',
       data_criacao: '',
       status: 'Consolidada',
       itens: [{ produto_id: 1, codigos_erp: ['ITEM-01'], quantidade: 1 }],
@@ -56,6 +60,7 @@ describe('ExportacaoModel', () => {
       nome_origem: 'DEPÓSITO DE UNIFORMES - SMED',
       escola_id: 2,
       codigo_destino: 'ESC-01',
+      nome_destino: 'ESC-01',
       data_criacao: '2026-01-01T10:00:00Z',
       status: 'Consolidada',
       itens: [

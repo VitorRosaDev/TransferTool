@@ -31,6 +31,12 @@ function formatarCodigos(codigosErp: string): string {
   }
 }
 
+/** Formata o valor fracionado (kg por unidade) para exibição no padrão pt-BR. */
+function formatarValorFracionado(valor: number | null | undefined): string {
+  if (valor == null) return '0';
+  return String(valor).replace('.', ',');
+}
+
 export function ListasCriadas() {
   const db = useSQLiteContext();
   const navigation = useNavigation<any>();
@@ -281,7 +287,9 @@ export function ListasCriadas() {
     setItemAtivo({
       id: item.produto_id,
       codigos_erp: item.codigos_erp,
-      descricao: item.descricao
+      descricao: item.descricao,
+      fracionado: item.fracionado,
+      valor_fracionado: item.valor_fracionado
     });
     setEditandoItemId(item.id);
     setQuantidade(item.quantidade.toString());
@@ -294,6 +302,10 @@ export function ListasCriadas() {
       const qtdNum = Number(quantidade.trim());
       if (isNaN(qtdNum) || qtdNum <= 0) {
         Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
+        return;
+      }
+      if (itemAtivo?.fracionado === 1 && !Number.isInteger(qtdNum)) {
+        Alert.alert('Quantidade inválida', 'Itens fracionados devem ser contados em pacotes (número inteiro).');
         return;
       }
       if (editandoItemId) {
@@ -526,6 +538,12 @@ export function ListasCriadas() {
               <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>{itemAtivo?.descricao}</Text>
               <Text style={{ color: colors.textMuted }}>Código(s): {formatarCodigos(itemAtivo?.codigos_erp || '[]')}</Text>
             </View>
+            {itemAtivo?.fracionado === 1 && (
+              <View style={{ marginBottom: 20, padding: 12, borderRadius: 8, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>Item fracionado — conte em pacotes.</Text>
+                <Text style={{ color: colors.textMuted, marginTop: 4 }}>1 pacote = {formatarValorFracionado(itemAtivo.valor_fracionado)} kg no ERP.</Text>
+              </View>
+            )}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text }]}>Quantidade *</Text>
               <TextInput

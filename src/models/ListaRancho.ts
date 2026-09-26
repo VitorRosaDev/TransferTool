@@ -23,6 +23,7 @@ export class ListaRancho {
         nome_origem: '',
         escola_id: 0,
         codigo_destino: '',
+        nome_destino: '',
         itens: [],
         status: 'Rascunho',
         data_criacao: new Date().toISOString()

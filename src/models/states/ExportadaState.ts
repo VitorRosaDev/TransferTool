@@ -3,6 +3,7 @@ import type { ItemRancho, PayloadRPA } from '../interfaces';
 import type { ListaRancho } from '../ListaRancho';
 import { OperacaoBloqueadaError, TransicaoInvalidaError } from '../errors';
 import { normalizarCodigos } from '../../utils/stringUtils';
+import { quantidadeErpDoItem } from '../fracionamento';
 
 export class ExportadaState implements IRanchoState {
   constructor(private contexto: ListaRancho) {}
@@ -40,11 +41,13 @@ export class ExportadaState implements IRanchoState {
       id_app: this.contexto.getData().id || 0,
       data_geracao: new Date().toISOString(),
       codigo_origem: this.contexto.getData().codigo_origem,
+      descricao_origem: this.contexto.getData().nome_origem,
       codigo_destino: this.contexto.getData().codigo_destino,
+      descricao_destino: this.contexto.getData().nome_destino,
       itens: this.contexto.getData().itens.map(item => ({
         codigos: normalizarCodigos(item.codigos_erp),
         descricao: item.descricao ?? '',
-        quantidade: item.quantidade
+        quantidade: quantidadeErpDoItem(item)
       }))
     };
   }

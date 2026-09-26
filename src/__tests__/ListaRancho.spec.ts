@@ -59,6 +59,7 @@ describe('Padrão State: ListaRancho', () => {
       nome_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
+      nome_destino: 'ESC-01',
       itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Consolidada',
       data_criacao: new Date().toISOString(),
@@ -77,6 +78,7 @@ describe('Padrão State: ListaRancho', () => {
       nome_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
+      nome_destino: 'ESC-01',
       itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Consolidada',
       data_criacao: new Date().toISOString(),
@@ -94,6 +96,7 @@ describe('Padrão State: ListaRancho', () => {
       nome_origem: 'DEP-01',
       escola_id: 1,
       codigo_destino: 'ESC-01',
+      nome_destino: 'ESC-01',
       itens: [{ produto_id: 1, codigos_erp: ['ALIM-001'], quantidade: 10 }],
       status: 'Exportada',
       data_criacao: new Date().toISOString(),
@@ -116,5 +119,20 @@ describe('Padrão State: ListaRancho', () => {
     expect(lista.getState()).toBeInstanceOf(ExportadaState);
     expect(payload.codigo_origem).toBe('DEP-01');
     expect(payload.codigo_destino).toBe('ESC-01');
+  });
+
+  it('deve converter para kg os itens fracionados ao gerar o payload', () => {
+    const lista = new ListaRancho();
+    lista.definirOrigemDestino(1, 'DEP-01', 2, 'ESC-01');
+    lista.adicionarItem({ produto_id: 1, codigos_erp: ['9523'], descricao: 'COLORAU', quantidade: 10, fracionado: true, valor_fracionado: 0.05 });
+    lista.adicionarItem({ produto_id: 2, codigos_erp: ['29285'], descricao: 'LEITE EM PÓ - SEM LACTOSE', quantidade: 2, fracionado: true, valor_fracionado: 0.4 });
+    lista.adicionarItem({ produto_id: 3, codigos_erp: ['2201'], descricao: 'ARROZ PARBOILIZADO', quantidade: 10 });
+    lista.consolidar();
+
+    const payload = lista.gerarPayload();
+
+    expect(payload.itens.find(i => i.codigos[0] === '9523')!.quantidade).toBe(0.5);
+    expect(payload.itens.find(i => i.codigos[0] === '29285')!.quantidade).toBe(0.8);
+    expect(payload.itens.find(i => i.codigos[0] === '2201')!.quantidade).toBe(10);
   });
 });

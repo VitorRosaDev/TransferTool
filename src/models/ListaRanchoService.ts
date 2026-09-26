@@ -11,6 +11,7 @@ interface ListaPersistida {
   nome_origem: string;
   escola_id: number;
   codigo_destino: string;
+  nome_destino: string;
   data_criacao: string;
   status: StatusLista;
 }
@@ -20,6 +21,8 @@ interface ItemPersistido {
   codigos_erp: string;
   descricao: string;
   quantidade: number;
+  fracionado: number;
+  valor_fracionado: number | null;
 }
 
 /**
@@ -171,7 +174,7 @@ export class ListaRanchoService {
   private static async reidratar(db: SQLiteDatabase, listaId: number): Promise<ListaRancho> {
     const cabecalho = await db.getFirstAsync<ListaPersistida>(`
       SELECT l.id, l.origem_id, d.codigo AS codigo_origem, d.nome AS nome_origem, l.escola_id,
-             e.codigo_deposito AS codigo_destino, l.data_criacao, l.status
+             e.codigo_deposito AS codigo_destino, e.nome AS nome_destino, l.data_criacao, l.status
       FROM listas l
       JOIN depositos_origem d ON d.id = l.origem_id
       JOIN escolas e ON e.id = l.escola_id
@@ -180,11 +183,12 @@ export class ListaRanchoService {
     if (!cabecalho) throw new Error('Lista não encontrada.');
 
     const itens = await db.getAllAsync<ItemPersistido>(`
-      SELECT i.id AS produto_id, i.codigos_erp, i.descricao, SUM(il.quantidade) AS quantidade
+      SELECT i.id AS produto_id, i.codigos_erp, i.descricao, SUM(il.quantidade) AS quantidade,
+             i.fracionado, i.valor_fracionado
       FROM itens_lista il
       JOIN itens i ON i.id = il.produto_id
       WHERE il.lista_id = ?
-      GROUP BY i.id, i.codigos_erp, i.descricao
+      GROUP BY i.id, i.codigos_erp, i.descricao, i.fracionado, i.valor_fracionado
     `, [listaId]);
 
     return new ListaRancho({ 
@@ -193,7 +197,9 @@ export class ListaRanchoService {
         produto_id: i.produto_id,
         codigos_erp: JSON.parse(i.codigos_erp),
         descricao: i.descricao,
-        quantidade: i.quantidade
+        quantidade: i.quantidade,
+        fracionado: !!i.fracionado,
+        valor_fracionado: i.valor_fracionado
       }))
     });
   }

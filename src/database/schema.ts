@@ -33,6 +33,8 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
       codigos_erp TEXT NOT NULL CHECK(json_valid(codigos_erp) AND json_array_length(codigos_erp) > 0),
       descricao TEXT NOT NULL,
       descricao_busca TEXT NOT NULL,
+      fracionado INTEGER NOT NULL DEFAULT 0,
+      valor_fracionado REAL,
       ativo INTEGER NOT NULL DEFAULT 1
     );
 
@@ -70,6 +72,7 @@ export async function setupDatabase(db: SQLite.SQLiteDatabase) {
 
   await removerColunasDeValidade(db);
   await adicionarColunaDepositoVinculado(db);
+  await adicionarColunasFracionamento(db);
 }
 
 /** Remove campos obsoletos de bancos criados por versões anteriores do app. */
@@ -93,6 +96,33 @@ async function adicionarColunaDepositoVinculado(db: SQLite.SQLiteDatabase) {
   const colunasItens = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens)');
   if (!colunasItens.some(coluna => coluna.name === 'deposito_id')) {
     await db.execAsync('ALTER TABLE itens ADD COLUMN deposito_id INTEGER REFERENCES depositos_origem(id)');
+  }
+}
+
+/**
+ * Adiciona as colunas de "item fracionado" em `itens` (registro no ERP por kg,
+ * mas distribuição em pacotes no depósito) e marca os itens conhecidos na
+ * primeira aplicação da migração.
+ */
+async function adicionarColunasFracionamento(db: SQLite.SQLiteDatabase) {
+  const colunasItens = await db.getAllAsync<{ name: string }>('PRAGMA table_info(itens)');
+  const temFracionado = colunasItens.some(coluna => coluna.name === 'fracionado');
+  const temValorFracionado = colunasItens.some(coluna => coluna.name === 'valor_fracionado');
+
+  const aplicouMigracao = !temFracionado || !temValorFracionado;
+
+  if (!temFracionado) {
+    await db.execAsync('ALTER TABLE itens ADD COLUMN fracionado INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!temValorFracionado) {
+    await db.execAsync('ALTER TABLE itens ADD COLUMN valor_fracionado REAL');
+  }
+
+  // Backfill apenas quando a migração é aplicada pela primeira vez, para não
+  // sobrescrever ajustes futuros feitos pelo usuário no catálogo.
+  if (aplicouMigracao) {
+    await db.runAsync(`UPDATE itens SET fracionado = 1, valor_fracionado = 0.05 WHERE codigos_erp LIKE '%"9523"%'`);
+    await db.runAsync(`UPDATE itens SET fracionado = 1, valor_fracionado = 0.4 WHERE codigos_erp LIKE '%"29285"%'`);
   }
 }
 
@@ -135,8 +165,8 @@ export async function seedDatabase(db: SQLite.SQLiteDatabase) {
   for (const item of SEED_ITENS) {
     const codigos = String(item.codigo).split(',').map(c => c.trim()).filter(Boolean);
     await db.runAsync(
-      'INSERT INTO itens (codigos_erp, descricao, descricao_busca) VALUES (?, ?, ?)',
-      [JSON.stringify(codigos), item.descricao, removeAcentos(item.descricao)]
+      'INSERT INTO itens (codigos_erp, descricao, descricao_busca, fracionado, valor_fracionado) VALUES (?, ?, ?, ?, ?)',
+      [JSON.stringify(codigos), item.descricao, removeAcentos(item.descricao), item.fracionado ? 1 : 0, item.valor_fracionado ?? null]
     );
   }
   
