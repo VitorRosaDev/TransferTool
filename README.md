@@ -9,22 +9,7 @@ O **TransferTool** é uma aplicação móvel profissional desenvolvida sob medid
 
 ---
 
-## 📸 Demonstração Visual e Fluxo Operacional
-
-As telas foram desenhadas seguindo princípios rigorosos de **acessibilidade em ambiente fabril/galpão**, utilizando o elegante tema **All Black** (alto contraste, reduzindo fadiga visual e economizando bateria de coletores OLED/AMOLED).
-
-````carousel
-![1. Histórico e Cargas Consolidadas](assets/img/Screenshot_2026-05-17-17-10-31-428_host.exp.exponent.jpg)
-<!-- slide -->
-![2. Criação de Carga - Seleção Dinâmica](assets/img/Screenshot_2026-05-17-17-10-43-349_host.exp.exponent.jpg)
-<!-- slide -->
-![3. Busca e Escaneamento de Produtos](assets/img/Screenshot_2026-05-17-17-10-59-138_host.exp.exponent.jpg)
-<!-- slide -->
-![5. Gestão em Lote e CRUD do Catálogo](assets/img/Screenshot_2026-05-17-17-12-05-148_host.exp.exponent.jpg)
-````
-
-> [!NOTE]
-> Para ver um vídeo completo do fluxo operacional do coletor móvel, consulte o arquivo gravado em `assets/img/Screenrecorder-2026-05-17-17-00-47-589.mp4`.
+> 🔒 **Privacidade:** a ferramenta opera de forma **local** (banco SQLite no próprio dispositivo, sem sincronização com servidores) e **não expõe dados sensíveis** da prefeitura a terceiros.
 
 ---
 
@@ -142,7 +127,7 @@ O app gera um arquivo de exportação em JSON estritamente parametrizado apenas 
 
 O botão de exportação do Hub gera um único arquivo JSON em formato de array. Ele inclui listas `Consolidada` e `Exportada` em ordem cronológica. Listas em `Rascunho` não são incluídas.
 
-O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsMMmin>.json` (ex.: `Carga_DEPÓSITO DE UNIFORMES - SMED_25-09-2026_14h30min.json`).
+O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsMMmin>.json` (ex.: `Carga_DEPÓSITO DE UNIFORMES_25-09-2026_14h30min.json`).
 
 ```json
 [
@@ -166,6 +151,24 @@ O arquivo é nomeado no formato `Carga_<depósito de origem>_<DD-MM-YYYY>_<HHhsM
   }
 ]
 ```
+
+---
+
+## 🧪 Suíte de Testes Automatizados (Jest)
+
+A suíte contém **30 testes** (Jest / `jest-expo`) cobrindo o domínio, os modelos e a serialização do payload:
+
+| Arquivo | Foco |
+| --- | --- |
+| `ListaRancho.spec.ts` | Padrão State: transições, bloqueios e geração de payload |
+| `ListaRanchoService.spec.ts` | Fronteira de escrita: transações, reidratação e exportação |
+| `ExportacaoModel.spec.ts` | Payload RPA: códigos normalizados e descrição |
+| `CatalogoModel.spec.ts` | CRUD offline e soft delete |
+| `ListaModel.spec.ts` | Busca normalizada e histórico |
+| `ListaOrdenacao.spec.ts` | Ordenação e reconciliação de listas |
+| `dummy.test.ts` | Smoke test |
+
+> Os testes de domínio usam mocks estruturais de `SQLiteDatabase`; eles **não** abrem um banco SQLite real.
 
 ---
 
@@ -199,6 +202,18 @@ Os comandos abaixo verificam os tipos e executam os testes Jest atuais. A suíte
   ```bash
   npm run test
   ```
+
+---
+
+## 📚 Documentação e Referências
+
+* [`CHANGELOG.md`](CHANGELOG.md): histórico de mudanças por versão.
+
+---
+
+## 📄 Licença
+
+Distribuído sob a licença [GNU Lesser General Public License v3.0](LICENSE) (LGPLv3).
 
 ---
 
