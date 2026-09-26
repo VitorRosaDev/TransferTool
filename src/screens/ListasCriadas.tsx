@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, ScrollView, NativeScrollEvent, NativeSyntheticEvent, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, NativeScrollEvent, NativeSyntheticEvent, KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +21,15 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
 const CARD_MARGIN = 10;
 const SNAP_INTERVAL = CARD_WIDTH + (CARD_MARGIN * 2);
+
+/** Formata a lista JSON de códigos ERP em uma string legível ("2201, 37357"). */
+function formatarCodigos(codigosErp: string): string {
+  try {
+    return JSON.parse(codigosErp).join(', ');
+  } catch {
+    return codigosErp;
+  }
+}
 
 export function ListasCriadas() {
   const db = useSQLiteContext();
@@ -312,7 +321,7 @@ export function ListasCriadas() {
       >
         <View style={{ flex: 1 }}>
           <Text style={[styles.itemTitle, { color: colors.text }]}>{item.descricao}</Text>
-          <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Código(s): {(() => { try { return JSON.parse(item.codigos_erp).join(', ') } catch { return item.codigos_erp } })()}</Text>
+          <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>Código(s): {formatarCodigos(item.codigos_erp)}</Text>
         </View>
         <View style={[styles.qtdContainer, { backgroundColor: colors.background }]}>
           <Text style={[styles.qtdText, { color: colors.primary }]}>{item.quantidade}</Text>
@@ -427,20 +436,22 @@ export function ListasCriadas() {
                   />
                 </View>
                 {suggestions.length > 0 && (
-                  <View style={styles.suggestionList}>
-                    <View style={[styles.suggestionInner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                      <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-                        {suggestions.map(s => (
-                          <TouchableOpacity key={s.id} style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(s)}>
-                            <View style={{ flex: 1 }}>
-                              <Text style={[styles.sugDesc, { color: colors.text }]}>{s.descricao}</Text>
-                              <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód(s): {(() => { try { return JSON.parse(s.codigos_erp).join(', ') } catch { return s.codigos_erp } })()}</Text>
-                            </View>
-                            <Ionicons name="add-circle" size={24} color={colors.primary} />
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
+                  <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <FlatList
+                      data={suggestions}
+                      keyExtractor={(item) => item.id.toString()}
+                      keyboardShouldPersistTaps="handled"
+                      style={{ maxHeight: 200 }}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity style={[styles.suggestionCard, { borderBottomColor: colors.border }]} onPress={() => openModalAdd(item)}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.sugDesc, { color: colors.text }]}>{item.descricao}</Text>
+                            <Text style={[styles.sugCod, { color: colors.textMuted }]}>Cód(s): {formatarCodigos(item.codigos_erp)}</Text>
+                          </View>
+                          <Ionicons name="add-circle" size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                      )}
+                    />
                   </View>
                 )}
               </View>
@@ -501,7 +512,7 @@ export function ListasCriadas() {
             </View>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>{itemAtivo?.descricao}</Text>
-              <Text style={{ color: colors.textMuted }}>Código(s): {(() => { try { return JSON.parse(itemAtivo?.codigos_erp || '[]').join(', ') } catch { return itemAtivo?.codigos_erp } })()}</Text>
+              <Text style={{ color: colors.textMuted }}>Código(s): {formatarCodigos(itemAtivo?.codigos_erp || '[]')}</Text>
             </View>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text }]}>Quantidade *</Text>
@@ -541,8 +552,26 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, height: 50, paddingHorizontal: 15 },
   input: { flex: 1, fontSize: 16 },
 
-  suggestionList: { position: 'absolute', top: 55, left: 0, right: 0, zIndex: 200 },
-  suggestionInner: { borderRadius: 12, borderWidth: 1, maxHeight: 200, elevation: 5, overflow: 'hidden' },
+  suggestionList: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.1)',
+      }
+    })
+  },
   suggestionCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderBottomWidth: 1 },
   sugDesc: { fontSize: 14, fontWeight: '600' },
   sugCod: { fontSize: 12 },
