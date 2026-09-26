@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, NativeScrollEvent, NativeSyntheticEvent, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, TextInput, Modal, NativeScrollEvent, NativeSyntheticEvent, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -309,6 +309,13 @@ export function ListasCriadas() {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSuggestions([]);
+    setIsSearchFocused(false);
+    Keyboard.dismiss();
+  };
+
   const renderItemCarrinho = ({ item }: { item: ItemCarrinho }) => {
     const activeLista = listas.find(l => l.id === selectedListaId);
     const isEditable = activeLista?.status === 'Rascunho';
@@ -434,6 +441,11 @@ export function ListasCriadas() {
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                   />
+                  {(isSearchFocused || searchQuery.length > 0) && (
+                    <TouchableOpacity onPress={handleClearSearch} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ marginLeft: 8 }}>
+                      <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 {suggestions.length > 0 && (
                   <View style={[styles.suggestionList, { backgroundColor: colors.card, borderColor: colors.border }]}>
