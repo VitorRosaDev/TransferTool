@@ -1,19 +1,19 @@
 export const SEED_ORIGENS = [
   {
     "codigo": "10",
-    "nome": "NUTRIÇÃO ALMOXARIFADO ESCOLAS - SMED"
+    "nome": "NUTRIÇÃO ALMOXARIFADO ESCOLAS"
   },
   {
     "codigo": "44",
-    "nome": "DEPÓSITO DE UNIFORMES - SMED"
+    "nome": "DEPÓSITO DE UNIFORMES"
   },
   {
     "codigo": "47",
-    "nome": "DEPÓSITO DE MATERIAIS DE MANUTENÇÃO - SMED"
+    "nome": "DEPÓSITO DE MATERIAIS DE MANUTENÇÃO"
   },
   {
     "codigo": "48",
-    "nome": "DEPÓSITO DE MATERIAIS ESCOLARES - SMED"
+    "nome": "DEPÓSITO DE MATERIAIS ESCOLARES"
   },
   {
     "codigo": "49",
@@ -25,246 +25,242 @@ export const SEED_ORIGENS = [
   },
   {
     "codigo": "123",
-    "nome": "DEPÓSITO DE MATERIAIS DE EXPEDIENTE - SMED"
+    "nome": "MATERIAIS DE EXPEDIENTE"
   },
   {
     "codigo": "124",
-    "nome": "DEPÓSITO DE MATERIAIS DE LIMPEZA - SMED"
+    "nome": "MATERIAIS DE LIMPEZA"
   },
   {
     "codigo": "134",
-    "nome": "DEPÓSITO DE MATERIAIS ESPORTIVOS - SMED"
+    "nome": "MATERIAIS ESPORTIVOS"
   },
   {
     "codigo": "217",
-    "nome": "Pacto pela afabetização"
+    "nome": "PACTO PELA ALFABETIZAÇÃO"
   }
 ];
 
 export const SEED_ESCOLAS = [
   {
     "codigo": "70",
-    "nome": "ALMOXARIFADO EMEF PODALÍRIO INÁCIO DE BARCELLOS"
+    "nome": "PODALÍRIO INÁCIO DE BARCELLOS"
   },
   {
     "codigo": "71",
-    "nome": "ALMOXARIFADO EMEI PROFESSORA CLOTILDE SOUZA DO NASCIMENTO"
+    "nome": "PROFESSORA CLOTILDE SOUZA DO NASCIMENTO"
   },
   {
     "codigo": "72",
-    "nome": "ALMOXARIFADO PEDACINHO DO CÉU"
+    "nome": "PEDACINHO DO CÉU"
   },
   {
     "codigo": "73",
-    "nome": "ALMOXARIFADO EMEI PEDRO ANTÔNIO PEREIRA DE GODOY"
+    "nome": "PEDRO ANTÔNIO PEREIRA DE GODOY"
   },
   {
     "codigo": "74",
-    "nome": "ALMOXARIFADO EMEF ALCIDES MAIA"
+    "nome": "ALCIDES MAIA"
   },
   {
     "codigo": "75",
-    "nome": "ALMOXARIFADO EMEF ALFREDO JOSÉ JUSTO"
+    "nome": "ALFREDO JOSÉ JUSTO"
   },
   {
     "codigo": "76",
-    "nome": "ALMOXARIFADO EMEF ALMIRA FEIJÓ"
+    "nome": "ALMIRA FEIJÓ"
   },
   {
     "codigo": "77",
-    "nome": "ALMOXARIFADO EMEF NOVA PETRÓPOLIS"
+    "nome": "NOVA PETRÓPOLIS"
   },
   {
     "codigo": "78",
-    "nome": "ALMOXARIFADO EMEF CECÍLIA MEIRELLES"
+    "nome": "CECÍLIA MEIRELLES"
   },
   {
     "codigo": "79",
-    "nome": "ALMOXARIFADO EMEF PAULO FREIRE"
+    "nome": "PAULO FREIRE"
   },
   {
     "codigo": "80",
-    "nome": "ALMOXARIFADO EMEF EMÍLIA DE OLIVEIRA"
+    "nome": "EMÍLIA DE OLIVEIRA"
   },
   {
     "codigo": "81",
-    "nome": "ALMOXARIFADO EMEF CAPITÃO GENTIL MACHADO DE GODOY"
+    "nome": "CAPITÃO GENTIL MACHADO DE GODOY"
   },
   {
     "codigo": "82",
-    "nome": "ALMOXARIFADO EMEF CORONEL APARÍCIO GONÇALVES BORGES"
+    "nome": "CORONEL APARÍCIO GONÇALVES BORGES"
   },
   {
     "codigo": "83",
-    "nome": "ALMOXARIFADO EMEF CORONEL JOÃO CARLOS VILAGRAN CABRITA"
+    "nome": "CORONEL JOÃO CARLOS VILAGRAN CABRITA"
   },
   {
     "codigo": "84",
-    "nome": "ALMOXARIFADO EMEF DOM PEDRO II"
+    "nome": "DOM PEDRO II"
   },
   {
     "codigo": "85",
-    "nome": "ALMOXARIFADO EMEF DUQUE DE CAXIAS"
+    "nome": "DUQUE DE CAXIAS"
   },
   {
     "codigo": "86",
-    "nome": "ALMOXARIFADO EMEF ELISARDO DUARTE NETO"
+    "nome": "ELISARDO DUARTE NETO"
   },
   {
     "codigo": "87",
-    "nome": "ALMOXARIFADO EMEF FREDERICO DIHL"
+    "nome": "FREDERICO DIHL"
   },
   {
     "codigo": "88",
-    "nome": "ALMOXARIFADO EMEF HILÁRIO FEIJÓ"
+    "nome": "HILÁRIO FEIJÓ"
   },
   {
     "codigo": "89",
-    "nome": "ALMOXARIFADO EMEF IDALINA DE FREITAS LIMA"
+    "nome": "IDALINA DE FREITAS LIMA"
   },
   {
     "codigo": "90",
-    "nome": "ALMOXARIFADO EMEF LEONEL DE MOURA BRIZOLA"
+    "nome": "LEONEL DE MOURA BRIZOLA"
   },
   {
     "codigo": "91",
-    "nome": "ALMOXARIFADO EMEF MONTEIRO LOBATO"
+    "nome": "MONTEIRO LOBATO"
   },
   {
     "codigo": "92",
-    "nome": "ALMOXARIFADO EMEF NORMÉLIO PEREIRA DE BARCELLOS"
+    "nome": "NORMÉLIO PEREIRA DE BARCELLOS"
   },
   {
     "codigo": "93",
-    "nome": "ALMOXARIFADO EMEF PADRE LÉO SEIDEL"
+    "nome": "PADRE LÉO SEIDEL"
   },
   {
     "codigo": "94",
-    "nome": "ALMOXARIFADO EMEF PROFESSORA ALICE DE CARVALHO"
+    "nome": "PROFESSORA ALICE DE CARVALHO"
   },
   {
     "codigo": "95",
-    "nome": "ALMOXARIFADO EMEF PROFESSORA GUILHERMINA DO AMARAL"
+    "nome": "PROFESSORA GUILHERMINA DO AMARAL"
   },
   {
     "codigo": "96",
-    "nome": "ALMOXARIFADO EMEF PROFESSOR JULIANO DO NASCIMENTO"
+    "nome": "PROFESSOR JULIANO DO NASCIMENTO"
   },
   {
     "codigo": "97",
-    "nome": "ALMOXARIFADO EMEF RUI BARBOSA"
+    "nome": "RUI BARBOSA"
   },
   {
     "codigo": "98",
-    "nome": "ALMOXARIFADO EMEF VEREADOR CLÉO DOS SANTOS"
+    "nome": "VEREADOR CLÉO DOS SANTOS"
   },
   {
     "codigo": "99",
-    "nome": "ALMOXARIFADO EMEF VEREADOR VAGUENIR MANOEL DE FRAGA"
+    "nome": "VEREADOR VAGUENIR MANOEL DE FRAGA"
   },
   {
     "codigo": "100",
-    "nome": "ALMOXARIFADO CMEP ADELINO FERREIRA BORBA"
+    "nome": "ADELINO FERREIRA BORBA"
   },
   {
     "codigo": "103",
-    "nome": "ALMOXARIFADO FLORESTAN FERNANDES ABESS"
+    "nome": "FLORESTAN FERNANDES ABESS"
   },
   {
     "codigo": "105",
-    "nome": "ALMOXARIFADO HELLO KIDS"
+    "nome": "HELLO KIDS FILIAL"
   },
   {
     "codigo": "106",
-    "nome": "ALMOXARIFADO AMOR PERFEITO MATRIZ"
-  },
-  {
-    "codigo": "107",
-    "nome": "ALMOXARIFADO AMOR PERFEITO 2"
+    "nome": "AMOR PERFEITO MATRIZ"
   },
   {
     "codigo": "108",
-    "nome": "ALMOXARIFADO AMOR PERFEITO FILIAL"
+    "nome": "AMOR PERFEITO FILIAL"
   },
   {
     "codigo": "109",
-    "nome": "ALMOXARIFADO GENTE NOSSA (MATRIZ)"
+    "nome": "GENTE NOSSA MATRIZ"
   },
   {
     "codigo": "110",
-    "nome": "ALMOXARIFADO GENTE NOSSA (FILIAL)"
+    "nome": "GENTE NOSSA FILIAL"
   },
   {
     "codigo": "111",
-    "nome": "ALMOXARIFADO ÁGAPE"
+    "nome": "ÁGAPE"
   },
   {
     "codigo": "112",
-    "nome": "ALMOXARIFADO LIGA ELEMENTAR DA MULHER"
+    "nome": "LIGA ELEMENTAR DA MULHER"
   },
   {
     "codigo": "113",
-    "nome": "ALMOXARIFADO AMIGOS DO TAIMBÉ"
+    "nome": "AMIGOS DO TAIMBÉ"
   },
   {
     "codigo": "114",
-    "nome": "ALMOXARIFADO RENATO BATALHA"
+    "nome": "RENATO BATALHA"
   },
   {
     "codigo": "115",
-    "nome": "ALMOXARIFADO EMEI GLASFIRA"
+    "nome": "GLASFIRA"
   },
   {
     "codigo": "116",
-    "nome": "ALMOXARIFADO RECANTO DA CRIANÇA ESPERANÇA 1"
+    "nome": "RECANTO DA CRIANÇA ESPERANÇA MATRIZ"
   },
   {
     "codigo": "117",
-    "nome": "ALMOXARIFADO RECANTO DA CRIANÇA ESPERANÇA FILIAL"
+    "nome": "RECANTO DA CRIANÇA ESPERANÇA FILIAL"
   },
   {
     "codigo": "118",
-    "nome": "ALMOXARIFADO CRECHE TIA NENINHA II"
+    "nome": "TIA NENINHA II"
   },
   {
     "codigo": "119",
-    "nome": "ALMOXAFIRADO CLUBE DOS LEÕEZINHOS"
+    "nome": "CLUBE DOS LEÕEZINHOS"
   },
   {
     "codigo": "120",
-    "nome": "ALMOXARIFADO TIA NENINHA I"
+    "nome": "TIA NENINHA I"
   },
   {
     "codigo": "121",
-    "nome": "ALMOXARIFADO CRECHE TURMA DA MÔNICA"
+    "nome": "TURMA DA MÔNICA"
   },
   {
     "codigo": "129",
-    "nome": "ALMOXARIFADO CEMAEE"
+    "nome": "CEMAEE"
   },
   {
     "codigo": "131",
-    "nome": "ALMOXARIFADO  EMEF ANTÔNIO DE GODOY"
+    "nome": "ANTÔNIO DE GODOY"
   },
   {
     "codigo": "132",
-    "nome": "ALMOXARIFADO TRANSPORTE SMED"
+    "nome": "TRANSPORTE SMED"
   },
   {
     "codigo": "135",
-    "nome": "DEPÓSITO SMED/COMPARTILHE"
+    "nome": "COMPARTILHE"
   },
   {
     "codigo": "136",
-    "nome": "Almoxarifado Central de Matrículas"
+    "nome": "CENTRAL DE MATRÍCULAS"
   },
   {
     "codigo": "137",
-    "nome": "ALMOXARIFADO DGA SMED"
+    "nome": "DGA"
   },
   {
     "codigo": "139",
-    "nome": "ALMOXARIFADO ESCOLA EM TEMPO INTEGRAL (ETI)"
+    "nome": "ETI - ESCOLA EM TEMPO INTEGRAL"
   },
   {
     "codigo": "140",
@@ -272,18 +268,22 @@ export const SEED_ESCOLAS = [
   },
   {
     "codigo": "188",
-    "nome": "Hello Kids Matriz"
+    "nome": "HELLO KIDS MATRIZ"
   }
 ];
 
 export const SEED_ITENS = [
   {
-    "codigo": "8564",
-    "descricao": "ACENDEDOR DE FOGÃO"
+    "codigo": "34415",
+    "descricao": "0 A 6 MESES - FÓRMULA INFANTIL DE PARTIDA PARA LACTENTES"
   },
   {
-    "codigo": "7210",
-    "descricao": "ACHOCOLATADO EM PÓ - DIET"
+    "codigo": "34416",
+    "descricao": "6 A 12 MESES - FÓRMULA INFANTIL DE SEGUIMENTO - PARA LACTENTES"
+  },
+  {
+    "codigo": "8564",
+    "descricao": "ACENDEDOR DE FOGÃO"
   },
   {
     "codigo": "25510",
@@ -343,11 +343,11 @@ export const SEED_ITENS = [
   },
   {
     "codigo": "28848",
-    "descricao": "BISCOITO DOCE - TIPO MAISENA"
+    "descricao": "BISCOITO DOCE - SABORMAISENA"
   },
   {
     "codigo": "2206",
-    "descricao": "BISCOITO MARIA INTEGRAL CHOCOLATE"
+    "descricao": "BISCOITO MARIA INTEGRAL - SABOR CHOCOLATE"
   },
   {
     "codigo": "16133",
@@ -386,10 +386,6 @@ export const SEED_ITENS = [
     "descricao": "CONCHA GRANDE"
   },
   {
-    "codigo": "38355",
-    "descricao": "COPO DE ÁGUA MINERAL - 200 ML"
-  },
-  {
     "codigo": "37354",
     "descricao": "CORTADOR LEGUMES GRANDE"
   },
@@ -419,7 +415,7 @@ export const SEED_ITENS = [
   },
   {
     "codigo": "8875, 12494",
-    "descricao": "EXTRATO TOMATE"
+    "descricao": "EXTRATO DE TOMATE"
   },
   {
     "codigo": "2214",
@@ -451,7 +447,7 @@ export const SEED_ITENS = [
   },
   {
     "codigo": "24534",
-    "descricao": "FERMENTO EM PÓ - QUÍMICO"
+    "descricao": "FERMENTO QUÍMICO"
   },
   {
     "codigo": "29319",
@@ -466,14 +462,6 @@ export const SEED_ITENS = [
     "descricao": "FORMA ALUMÍNIO MÉDIA"
   },
   {
-    "codigo": "34415",
-    "descricao": "FÓRMULA INFANTIL DE PARTIDA PARA LACTENTES DE 0 A 6 MESES"
-  },
-  {
-    "codigo": "34416",
-    "descricao": "FÓRMULA INFANTIL DE SEGUIMENTO - PARA LACTENTES DE 6 A 12 MESES"
-  },
-  {
     "codigo": "37366",
     "descricao": "GARRAFA TÉRMICA 12L"
   },
@@ -486,7 +474,7 @@ export const SEED_ITENS = [
     "descricao": "JARRA MEDIDORA"
   },
   {
-    "codigo": "6615, 23615",
+    "codigo": "23615",
     "descricao": "LEITE EM PÓ"
   },
   {
@@ -538,7 +526,7 @@ export const SEED_ITENS = [
     "descricao": "MANJERICÃO"
   },
   {
-    "codigo": "6478, 40306",
+    "codigo": "40306",
     "descricao": "MILHO PIPOCA"
   },
   {
@@ -634,19 +622,19 @@ export const SEED_ITENS = [
     "descricao": "SAL REFINADO"
   },
   {
-    "codigo": "29299",
-    "descricao": "SUCO DE UVA TINTO INTEGRAL - 1L"
-  },
-  {
-    "codigo": "2240, 4861",
-    "descricao": "VINAGRE DE ÁLCOOL"
+    "codigo": "33622",
+    "descricao": "SUCO CAIXINHA LARANJA E MAÇÃ"
   },
   {
     "codigo": "33621",
     "descricao": "SUCO CAIXINHA UVA"
   },
   {
-    "codigo": "33622",
-    "descricao": "SUCO CAIXINHA LARANJA E MAÇÃ"
+    "codigo": "29299",
+    "descricao": "SUCO DE UVA TINTO INTEGRAL - 1L"
+  },
+  {
+    "codigo": "4861",
+    "descricao": "VINAGRE DE ÁLCOOL"
   }
 ];
